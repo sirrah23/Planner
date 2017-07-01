@@ -6,12 +6,25 @@
     <body>
         <div id="planner" class="container">
             <h2>Planner</h2>
-            <input v-model="item" placeholder="add new item">
+            <input v-model="item" placeholder="new item">
             <button v-on:click="add_new_item">Add Item</button>
-            <h3>Item List</h3>
+            <input v-model="group" placeholder="new group">
+            <button v-on:click="add_new_group">Add Group</button>
+            <h3>Item List <button v-on:click="shuffle_items">Shuffle</button> </h3>
             <ul id="all_item_list">
                 <li v-for="item in items">
                     {{item}}
+                </li>    
+            </ul>
+            <h3>Groups</h3>
+            <ul>
+                <li v-for="group in groups">
+                    {{group.name}}
+                    <ul>
+		                <li v-for="item in group.items">
+			                {{item}}
+		                </li>
+                    </ul>
                 </li>    
             </ul>
         </div>
@@ -20,12 +33,31 @@
              el: "#planner",
              data: {
                 item: "",
-                items : []
+                items : [],
+                group: "",
+                groups: []
             },
              methods: {
                 add_new_item : function(event){
                     this.items.push(this.item);
                     this.item = "";
+                },
+                add_new_group: function(event){
+                	let new_group = {}
+                	new_group.name = this.group;
+                	new_group.items = []
+                	this.groups.push(new_group);
+                	this.group = "";
+                },
+                shuffle_items: function(event){
+                	if(!this.groups.length > 0)
+                		return;
+                	let curr_item, rand_idx;
+                	while(this.items.length > 0){
+                		rand_idx = Math.floor(Math.random() * this.groups.length);
+                		curr_item = this.items.shift();
+                		this.groups[rand_idx].items.push(curr_item);
+                	}
                 }
             },
          });

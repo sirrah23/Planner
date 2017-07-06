@@ -20,9 +20,10 @@
             <ul>
                 <li v-for="group in groups">
                     {{group.name}}
-                    <ul>
+                    <ul style="list-style-type:none">
 		                <li v-for="item in group.items">
-			                {{item}}
+                            <input type="checkbox" id="checkbox" v-model="item.checked">
+                            <label for="checkbox">{{item.name}}</label>
 		                </li>
                     </ul>
                 </li>    
@@ -60,7 +61,8 @@
                 	let curr_item, rand_idx, curr_group = 0;
                 	while(this.items.length > 0){
                 		rand_idx = Math.floor(Math.random() * this.items.length);
-                		curr_item = this.items.splice(rand_idx, 1)[0];
+                        curr_item = {"name": this.items.splice(rand_idx, 1)[0], "checked": false};
+                        console.log(curr_item);
                 		this.groups[curr_group].items.push(curr_item);
                         curr_group = (curr_group + 1) % num_groups
                 	}

@@ -39,24 +39,30 @@
             },
              methods: {
                 add_new_item : function(event){
+                    if(this.item.length == 0)
+                        return;
                     this.items.push(this.item);
                     this.item = "";
                 },
                 add_new_group: function(event){
-                	let new_group = {}
+                    if(this.group.length == 0)
+                        return;
+                	const new_group = {}
                 	new_group.name = this.group;
                 	new_group.items = []
                 	this.groups.push(new_group);
                 	this.group = "";
                 },
                 shuffle_items: function(event){
-                	if(!this.groups.length > 0)
+                    const num_groups = this.groups.length;
+                	if(num_groups == 0)
                 		return;
-                	let curr_item, rand_idx;
+                	let curr_item, rand_idx, curr_group = 0;
                 	while(this.items.length > 0){
-                		rand_idx = Math.floor(Math.random() * this.groups.length);
-                		curr_item = this.items.shift();
-                		this.groups[rand_idx].items.push(curr_item);
+                		rand_idx = Math.floor(Math.random() * this.items.length);
+                		curr_item = this.items.splice(rand_idx, 1)[0];
+                		this.groups[curr_group].items.push(curr_item);
+                        curr_group = (curr_group + 1) % num_groups
                 	}
                 }
             },

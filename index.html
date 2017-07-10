@@ -24,12 +24,21 @@
 		                <li v-for="item in group.items">
                             <input type="checkbox" id="checkbox" v-model="item.checked">
                             <label for="checkbox">{{item.name}}</label>
+                            <select v-on:change="move_item(group)" v-model="item.moved_to">
+                                <option></option>
+                                <option 
+                                    v-for="group_inner in groups" 
+                                    v-if="group_inner.name !== group.name"
+                                > {{group_inner.name}}
+                                </option>
+                            </select>
 		                </li>
                     </ul>
                 </li>    
             </ul>
         </div>
         <script>
+        //TODO: Refactor group into key-value pairs where key is group name
          const app = new Vue({
              el: "#planner",
              data: {
@@ -61,12 +70,38 @@
                 	let curr_item, rand_idx, curr_group = 0;
                 	while(this.items.length > 0){
                 		rand_idx = Math.floor(Math.random() * this.items.length);
-                        curr_item = {"name": this.items.splice(rand_idx, 1)[0], "checked": false};
+                        curr_item = {"name": this.items.splice(rand_idx, 1)[0], "checked": false, moved_to:""};
                         console.log(curr_item);
                 		this.groups[curr_group].items.push(curr_item);
                         curr_group = (curr_group + 1) % num_groups
                 	}
-                }
+                },
+                move_item: function(group){
+                    let item_to_move;
+                    for(let i = 0; i < group.items.length; i++){
+                        if(group.items[i].moved_to !== ""){
+                            item_to_move = group.items[i];
+                            break;
+                        }
+                    }
+
+                    if(item_to_move === undefined)
+                        return;
+
+                    if(item_to_move.moved_to === group.name)
+                        return;
+
+                    const new_group = item_to_move.moved_to;
+                    item_to_move.moved_to = "";
+
+                    for(let i = 0; i < this.groups.length; i++){
+                        if(this.groups[i].name === new_group){
+                            this.groups[i].items.push(item_to_move);
+                            group.items.splice(item_to_move);
+                            return;
+                        }
+                    }
+                },
             },
          });
         </script>

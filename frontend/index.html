@@ -21,7 +21,7 @@
                 <li v-for="group in groups">
                     {{group.name}}
                     <ul style="list-style-type:none">
-		                <li v-for="item in group.items">
+                        <li v-for="item in group.items">
                             <input type="checkbox" id="checkbox" v-model="item.checked">
                             <label for="checkbox">{{item.name}}</label>
                             <select v-on:change="move_item(group)" v-model="item.moved_to">
@@ -32,7 +32,7 @@
                                 > {{group_inner.name}}
                                 </option>
                             </select>
-		                </li>
+                        </li>
                     </ul>
                 </li>    
             </ul>
@@ -57,24 +57,24 @@
                 add_new_group: function(event){
                     if(this.group.length == 0)
                         return;
-                	const new_group = {}
-                	new_group.name = this.group;
-                	new_group.items = []
-                	this.groups.push(new_group);
-                	this.group = "";
+                    const new_group = {}
+                    new_group.name = this.group;
+                    new_group.items = []
+                    this.groups.push(new_group);
+                    this.group = "";
                 },
                 shuffle_items: function(event){
                     const num_groups = this.groups.length;
-                	if(num_groups == 0)
-                		return;
-                	let curr_item, rand_idx, curr_group = 0;
-                	while(this.items.length > 0){
-                		rand_idx = Math.floor(Math.random() * this.items.length);
+                    if(num_groups == 0)
+                        return;
+                    let curr_item, rand_idx, curr_group = 0;
+                    while(this.items.length > 0){
+                        rand_idx = Math.floor(Math.random() * this.items.length);
                         curr_item = {"name": this.items.splice(rand_idx, 1)[0], "checked": false, moved_to:""};
                         console.log(curr_item);
-                		this.groups[curr_group].items.push(curr_item);
+                        this.groups[curr_group].items.push(curr_item);
                         curr_group = (curr_group + 1) % num_groups
-                	}
+                    }
                 },
                 move_item: function(group){
                     let item_to_move;

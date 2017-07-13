@@ -1,8 +1,8 @@
 <html>
     <head>
         <meta charset="UTF-8"> 
-        <script src="https://unpkg.com/vue"></script>
-        <script src="https://unpkg.com/axios@0.16.2/dist/axios.js"></script>
+        <script src={{ url_for("static", filename="bower_components/vue/dist/vue.js") }}></script>
+        <script src={{ url_for("static", filename="bower_components/axios/dist/axios.js") }}></script>
     </head>
     <body>
         <div id="planner" class="container">

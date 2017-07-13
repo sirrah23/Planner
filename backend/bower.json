@@ -1,0 +1,23 @@
+{
+  "name": "planner",
+  "authors": [
+    "sirrah23 <hseth93@gmail.com>"
+  ],
+  "description": "An application to plan things",
+  "main": "",
+  "license": "MIT",
+  "homepage": "",
+  "private": true,
+  "directory": "static/bower_components",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "vue": "^2.3.4",
+    "axios": "^0.16.2"
+  }
+}

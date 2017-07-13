@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 from flask_restful import Resource, Api
 
 app = Flask(__name__)
@@ -30,6 +30,11 @@ class Planner(Resource):
                 }
 
 api.add_resource(Planner, '/planner')
+
+
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 if __name__ == '__main__':
     app.run(debug=True)

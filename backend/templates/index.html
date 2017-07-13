@@ -1,8 +1,8 @@
 <html>
     <head>
         <meta charset="UTF-8"> 
-        <script src={{ url_for("static", filename="bower_components/vue/dist/vue.js") }}></script>
-        <script src={{ url_for("static", filename="bower_components/axios/dist/axios.js") }}></script>
+        <script src=%% url_for("static", filename="bower_components/vue/dist/vue.js") %%></script>
+        <script src=%% url_for("static", filename="bower_components/axios/dist/axios.js") %%></script>
     </head>
     <body>
         <div id="planner" class="container">
@@ -14,23 +14,23 @@
             <h3>Item List <button v-on:click="shuffle_items">Shuffle</button> </h3>
             <ul id="all_item_list">
                 <li v-for="item in items">
-                    [[item]]
+                    {{item}}
                 </li>    
             </ul>
             <h3>Groups</h3>
             <ul>
                 <li v-for="group in groups">
-                    [[group.name]]
+                    {{group.name}}
                     <ul style="list-style-type:none">
                         <li v-for="item in group.items">
                             <input type="checkbox" id="checkbox" v-model="item.checked">
-                            <label for="checkbox">[[item.name]]</label>
+                            <label for="checkbox">{{item.name}}</label>
                             <select v-on:change="move_item(group)" v-model="item.moved_to">
                                 <option></option>
                                 <option 
                                     v-for="group_inner in groups" 
                                     v-if="group_inner.name !== group.name"
-                                > [[group_inner.name]]
+                                > {{group_inner.name}}
                                 </option>
                             </select>
                         </li>
@@ -42,7 +42,6 @@
         //TODO: Refactor group into key-value pairs where key is group name
          const app = new Vue({
              el: "#planner",
-             delimeters: ["[[","]]"], //Change delimeters so Jinja will work properly
              data: {
                 item: "",
                 items : [],

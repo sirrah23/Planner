@@ -29,7 +29,7 @@ class Planner(Resource):
                     },
                 }
 
-api.add_resource(Planner, '/planner')
+api.add_resource(Planner, '/api/planner')
 
 
 @app.route('/')

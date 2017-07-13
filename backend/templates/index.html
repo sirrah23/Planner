@@ -19,18 +19,18 @@
             </ul>
             <h3>Groups</h3>
             <ul>
-                <li v-for="group in groups">
-                    {{group.name}}
+                <li v-for="(items, group_name, _) in groups">
+                    {{group_name}}
                     <ul style="list-style-type:none">
-                        <li v-for="item in group.items">
+                        <li v-for="item in items">
                             <input type="checkbox" id="checkbox" v-model="item.checked">
                             <label for="checkbox">{{item.name}}</label>
-                            <select v-on:change="move_item(group)" v-model="item.moved_to">
+                            <select v-on:change="move_item(group_name)" v-model="item.moved_to">
                                 <option></option>
                                 <option 
-                                    v-for="group_inner in groups" 
-                                    v-if="group_inner.name !== group.name"
-                                > {{group_inner.name}}
+                                    v-for="(_, group_inner_name, _) in groups" 
+                                    v-if="group_inner_name !== group_name">
+                                    {{group_inner_name}}
                                 </option>
                             </select>
                         </li>
@@ -46,13 +46,13 @@
                 item: "",
                 items : [],
                 group: "",
-                groups: []
+                groups: {}
              },
              created: function(){
                 axios.get("/api/planner")
                     .then(function(response){
-                        console.log(response);
                         app.items = response.data.items;
+                        app.groups = response.data.groups;
                     });
              },
              methods: {
@@ -65,30 +65,42 @@
                 add_new_group: function(event){
                     if(this.group.length == 0)
                         return;
-                    const new_group = {}
-                    new_group.name = this.group;
-                    new_group.items = []
-                    this.groups.push(new_group);
+                    //FIXME: Group passed in that already exists...
+                    this.groups[this.group] = []
                     this.group = "";
                 },
                 shuffle_items: function(event){
-                    const num_groups = this.groups.length;
+                    /*
+                    / TODO: The algorithm should not always
+                    / start at the first group because if the
+                    / user repeatedly adds on item and shuffles
+                    / then the first user will get that object every
+                    / time.
+                   */
+                    const all_groups = Object.keys(this.groups);
+                    const num_groups = all_groups.length
                     if(num_groups == 0)
                         return;
-                    let curr_item, rand_idx, curr_group = 0;
+                    let curr_item, rand_idx, curr_group_idx = 0;
                     while(this.items.length > 0){
                         rand_idx = Math.floor(Math.random() * this.items.length);
+                        //TODO: Create a function to generate this object
                         curr_item = {"name": this.items.splice(rand_idx, 1)[0], "checked": false, moved_to:""};
-                        console.log(curr_item);
-                        this.groups[curr_group].items.push(curr_item);
-                        curr_group = (curr_group + 1) % num_groups
+                        this.groups[all_groups[curr_group_idx]].push(curr_item);
+                        curr_group_idx = (curr_group_idx + 1) % num_groups
                     }
                 },
-                move_item: function(group){
+                move_item: function(group_name){
                     let item_to_move;
-                    for(let i = 0; i < group.items.length; i++){
-                        if(group.items[i].moved_to !== ""){
-                            item_to_move = group.items[i];
+                    let i;
+
+                    //Find the item that we are supposed to try and move
+                    for(i = 0; i < this.groups[group_name].length; i++){
+                        //FIXME: Hack until proper data communicator object is created...
+                        //Can't just do app.groups=... and app.items=... directly in the
+                        //create method; have to initialize with proper fields
+                        if(!["", undefined].includes(this.groups[group_name][i].moved_to)){
+                            item_to_move = this.groups[group_name][i]
                             break;
                         }
                     }
@@ -96,19 +108,18 @@
                     if(item_to_move === undefined)
                         return;
 
-                    if(item_to_move.moved_to === group.name)
+                    //If the item was somehow moved to a the group it is 
+                    //already in somehow then quit.
+                    if(item_to_move.moved_to === group_name)
                         return;
 
                     const new_group = item_to_move.moved_to;
                     item_to_move.moved_to = "";
 
-                    for(let i = 0; i < this.groups.length; i++){
-                        if(this.groups[i].name === new_group){
-                            this.groups[i].items.push(item_to_move);
-                            group.items.splice(item_to_move);
-                            return;
-                        }
-                    }
+                    //Finally do the actual item move 
+                    this.groups[new_group].push(item_to_move)
+                    const remove_idx = this.groups[group_name].indexOf(item_to_move);
+                    this.groups[group_name].splice(remove_idx,1);
                 },
             },
          });

@@ -1,3 +1,4 @@
 *.swp
-backend/.venv/
+.venv/
 bower_components/
+__pycache__

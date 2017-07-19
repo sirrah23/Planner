@@ -14,9 +14,9 @@ class CustomFlask(Flask):
 ))
 
 app = CustomFlask(__name__)
-app.config.from_object('backend.config.DevelopmentConfig')
+app.config.from_object('config.DevelopmentConfig')
 api = Api(app)
-db = PyMongo(app)
+mongo = PyMongo(app)
 
 class Plans(object):
 
@@ -58,6 +58,7 @@ api.add_resource(Planner, '/api/planner')
 
 @app.route('/')
 def index():
+    mongo.db.plans.insert({"link":"abcdef", "items":["a", "b", "c"], "groups": {}}) #temp
     return render_template('index.html')
 
 if __name__ == '__main__':

@@ -3,8 +3,8 @@ services:
   web:
     build: .
     environment:
-      - DATABASE_URL=plans-db
-      - DATABASE_TEST_URL=plans-test-db
+      - DATABASE_URL=planner
+      - DATABASE_TEST_URL=planner_test
     ports:
      - "5000:5000"
     volumes:

@@ -4,7 +4,7 @@ class BaseConfig:
     """Base configuration"""
     DEBUG = False
     TESTING = False
-    MONGO_URI="mongodb://mongo:27017"
+    MONGO_HOST="mongo"
 
 
 class DevelopmentConfig(BaseConfig):

@@ -1,6 +1,7 @@
 version: '2'
 services:
   web:
+    # TODO: Add a command section here to run the server via `python manager.py runserver --host 0.0.0.0`
     build: .
     environment:
       - DATABASE_URL=planner

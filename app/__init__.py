@@ -14,18 +14,19 @@ class CustomFlask(Flask):
 ))
 
 app = CustomFlask(__name__)
-app.config.from_object('app.config.DevelopmentConfig')
+app.config.from_object('app.config.DevelopmentConfig') # TODO: Environment variable
 api = Api(app)
-#mongo = PyMongo(app)
+mongo = PyMongo(app)
 
 class Plans(object):
 
-    def __init__(db):
-        self.db = db
-
     @classmethod
-    def get_plans_from_link(link):
-        pass
+    def get_plan_from_link(cls, link):
+        result = mongo.db.plans.find_one({"link": link})
+        if not result:
+            return {"status": "fail", "errormsg": "Non-existent link", "data": {}}
+        else:
+            return {"status": "success", "errormsg": "", "data": result}
 
 
 class Planner(Resource):
@@ -55,8 +56,7 @@ class Planner(Resource):
 
 api.add_resource(Planner, '/api/planner')
 
-
 @app.route('/')
 def index():
-    #mongo.db.plans.insert({"link":"abcdef", "items":["a", "b", "c"], "groups": {}}) #temp
+    mongo.db.plans.insert({"link":"abcdef", "items":["a", "b", "c"], "groups": {}}) #temp
     return render_template('index.html')

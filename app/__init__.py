@@ -18,15 +18,22 @@ app.config.from_object('app.config.DevelopmentConfig') # TODO: Environment varia
 api = Api(app)
 mongo = PyMongo(app)
 
-class Plans(object):
+class Plan(object):
+
+    def __init__(self, link, items=[], groups={}):
+        self.link = link
+        self.items = items
+        self.groups = groups
+
+class PlansRepo(object):
 
     @classmethod
     def get_plan_from_link(cls, link):
         result = mongo.db.plans.find_one({"link": link})
         if not result:
-            return {"status": "fail", "errormsg": "Non-existent link", "data": {}}
+            return None
         else:
-            return {"status": "success", "errormsg": "", "data": result}
+            return Plan(result["link"], result["items"], result["groups"])
 
 
 class Planner(Resource):

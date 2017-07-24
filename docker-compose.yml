@@ -5,6 +5,7 @@ services:
     environment:
       - DATABASE_URL=planner
       - DATABASE_TEST_URL=planner_test
+      - APP_CONFIG=app.config.DevelopmentConfig
     ports:
      - "5000:5000"
     command: python manager.py runserver --host 0.0.0.0

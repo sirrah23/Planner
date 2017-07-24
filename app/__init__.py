@@ -1,6 +1,7 @@
 from flask import Flask, render_template
 from flask_restful import Resource, Api
 from flask_pymongo import PyMongo
+import os
 
 class CustomFlask(Flask):
     jinja_options = Flask.jinja_options.copy()
@@ -14,7 +15,7 @@ class CustomFlask(Flask):
 ))
 
 app = CustomFlask(__name__)
-app.config.from_object('app.config.DevelopmentConfig') # TODO: Environment variable
+app.config.from_object(os.environ.get('APP_CONFIG'))
 api = Api(app)
 mongo = PyMongo(app)
 

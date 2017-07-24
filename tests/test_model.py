@@ -1,5 +1,5 @@
 import unittest
-from app import app, PlansRepo, mongo
+from app import app, PlansRepo, mongo, Plan
 
 # Testing utilities
 def insert_link(link, items, groups):
@@ -39,5 +39,29 @@ class TestPlansGet(unittest.TestCase):
         self.assertEquals(res.groups, {"groupA":[], "groupB": ["aa"]})
 
     def tearDown(self):
+        drop_collection()
 
+class TestPlansInsert(unittest.TestCase):
+
+    def test_insert_empty_link(self):
+        p_to_insert = Plan(link="qwerty")
+        inserted_id = PlansRepo.insert(p_to_insert)
+        p_inserted = PlansRepo.get_plan_from_link("qwerty")
+        self.assertEqual(get_all().count(), 1)
+        self.assertEqual(inserted_id, p_inserted.obj_id)
+        self.assertEqual(p_inserted.link, "qwerty")
+        self.assertEqual(p_inserted.items, [])
+        self.assertEqual(p_inserted.groups, {})
+
+    def test_insert_link_items(self):
+        p_to_insert = Plan(link="qwerty", items=["a", "b", "c"])
+        inserted_id = PlansRepo.insert(p_to_insert)
+        p_inserted = PlansRepo.get_plan_from_link("qwerty")
+        self.assertEqual(get_all().count(), 1)
+        self.assertEqual(inserted_id, p_inserted.obj_id)
+        self.assertEqual(p_inserted.link, "qwerty")
+        self.assertEqual(p_inserted.items, ["a", "b", "c"])
+        self.assertEqual(p_inserted.groups, {})
+
+    def tearDown(self):
         drop_collection()

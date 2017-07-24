@@ -20,20 +20,39 @@ mongo = PyMongo(app)
 
 class Plan(object):
 
-    def __init__(self, link, items=[], groups={}):
+    def __init__(self, link, items=[], groups={}, obj_id=None):
+        self.obj_id = obj_id
         self.link = link
         self.items = items
         self.groups = groups
 
 class PlansRepo(object):
+    
+    #TODO: Class level collection variable
 
     @classmethod
-    def get_plan_from_link(cls, link):
+    def get_plan_from_link(cls, link): #TODO: Rename
         result = mongo.db.plans.find_one({"link": link})
         if not result:
             return None
         else:
-            return Plan(result["link"], result["items"], result["groups"])
+            return Plan(
+                        obj_id = result["_id"],
+                        link=result["link"],
+                        items=result["items"],
+                        groups=result["groups"]
+                    )
+
+    @classmethod
+    def insert(self, p):
+        #TODO: link already exists...
+        result = mongo.db.plans.insert_one(
+            {
+                "link": p.link,
+                "items": p.items,
+                "groups": p.groups
+            })
+        return result.inserted_id
 
 
 class Planner(Resource):
@@ -65,5 +84,4 @@ api.add_resource(Planner, '/api/planner')
 
 @app.route('/')
 def index():
-    mongo.db.plans.insert({"link":"abcdef", "items":["a", "b", "c"], "groups": {}}) #temp
     return render_template('index.html')

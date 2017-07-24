@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, abort
 from flask_restful import Resource, Api
 from flask_pymongo import PyMongo
 import os
@@ -57,31 +57,20 @@ class PlansRepo(object):
 
 
 class Planner(Resource):
-    def get(self):
-        return {
-                    "items":["Tents","BBQ Sauce","Bug Spray"],
-                    "groups":{
-                        "H&M":[
-                            {
-                                "name": "Hot Sauce",
-                                "checked": False
-                            },
-                            {
-                                "name": "Sleeping Bags",
-                                "checked": True
-                            }
-                        ],
+    def get(self, plan_link):
+        data = PlansRepo.get_plan_from_link(plan_link)
+        if not data:
+            abort(404)
+        else:
+            res = {
+                    "link": data.link,
+                    "items": data.items,
+                    "groups": data.groups
+            }
+            return res
 
-                        "C&D":[
-                            {
-                                "name": "chicken",
-                                "checked": True
-                            }
-                        ]
-                    },
-                }
 
-api.add_resource(Planner, '/api/planner')
+api.add_resource(Planner, '/api/planner/<string:plan_link>')
 
 @app.route('/')
 def index():

@@ -1,16 +1,8 @@
 import unittest
-from app import app, PlansRepo, mongo, Plan
+from tests.utils import insert_link, get_all, drop_collection
+from app import app, PlansRepo, Plan
 
-# Testing utilities
-def insert_link(link, items, groups):
-    return mongo.db.plans.insert({"link": link, "items": items, "groups": groups}) 
     
-def get_all():
-    return mongo.db.plans.find()
-    
-def drop_collection():
-    mongo.db.plans.drop()
-
 class TestPlansGet(unittest.TestCase):
 
     def test_get_nonexistent_link(self):

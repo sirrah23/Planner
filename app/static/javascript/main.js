@@ -1,3 +1,7 @@
+const getPlannerLinkWindow = () => {
+    return window.location.href.split(/\//).pop()
+}
+
 const plannerApiConn = {
     get(link, cb){
         axios.get("/api/planner/"+link)
@@ -20,7 +24,7 @@ const app = new Vue({
    created: function(){
        const me = this;
        plannerApiConn.get(
-               window.location.href.split(/\//).pop(),
+               getPlannerLinkWindow(),
                (respData) => {
                    me.items = respData.items;
                    me.groups = respData.groups;

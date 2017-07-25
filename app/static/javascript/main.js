@@ -7,13 +7,6 @@ const app = new Vue({
       group: "",
       groups: {}
    },
-   created: function(){
-      axios.get("/api/planner")
-          .then(function(response){
-              app.items = response.data.items;
-              app.groups = response.data.groups;
-          });
-   },
    methods: {
       add_new_item : function(event){
           if(this.item.length == 0)
@@ -79,6 +72,7 @@ const app = new Vue({
           this.groups[new_group].push(item_to_move)
           const remove_idx = this.groups[group_name].indexOf(item_to_move);
           this.groups[group_name].splice(remove_idx,1);
+          this.$forceUpdate();
       },
   },
 });

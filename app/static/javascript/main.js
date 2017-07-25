@@ -1,4 +1,14 @@
-//TODO: Refactor group into key-value pairs where key is group name
+const plannerApiConn = {
+    get(link, cb){
+        axios.get("/api/planner/"+link)
+        .then(function(response){
+             if(cb){
+                 cb(response.data);
+            }
+        });
+    }
+}
+
 const app = new Vue({
    el: "#planner",
    data: {
@@ -6,6 +16,15 @@ const app = new Vue({
       items : [],
       group: "",
       groups: {}
+   },
+   created: function(){
+       const me = this;
+       plannerApiConn.get(
+               window.location.href.split(/\//).pop(),
+               (respData) => {
+                   me.items = respData.items;
+                   me.groups = respData.groups;
+               });
    },
    methods: {
       add_new_item : function(event){

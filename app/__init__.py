@@ -72,6 +72,10 @@ class Planner(Resource):
 
 api.add_resource(Planner, '/api/planner/<string:plan_link>')
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+@app.route('/<plan_link>')
+def main(plan_link):
+    data = PlansRepo.get_plan_from_link(plan_link)
+    if data:
+        return render_template('main.html')
+    else:
+        abort(404)

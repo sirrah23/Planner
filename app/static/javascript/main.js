@@ -13,6 +13,22 @@ const plannerApiConn = {
     }
 }
 
+const initGroupItem = (item) => {
+    const group_item = {};
+    group_item.name = item.name;
+    group_item.checked = item.checked;
+    group_item.moved_to = "";
+    return group_item;
+}
+
+const initGroupItems = (groups) => {
+    const initialized_groups = {};
+    for (let g in groups){
+        initialized_groups[g] = groups[g].map( (i) => { return initGroupItem(i); } );
+    }
+    return initialized_groups;
+}
+
 const app = new Vue({
    el: "#planner",
    data: {
@@ -23,11 +39,12 @@ const app = new Vue({
    },
    created: function(){
        const me = this;
+       //TODO: Inject the api conn...
        plannerApiConn.get(
                getPlannerLinkWindow(),
                (respData) => {
                    me.items = respData.items;
-                   me.groups = respData.groups;
+                   me.groups = initGroupItems(respData.groups);
                });
    },
    methods: {
@@ -60,7 +77,7 @@ const app = new Vue({
           while(this.items.length > 0){
               rand_idx = Math.floor(Math.random() * this.items.length);
               //TODO: Create a function to generate this object
-              curr_item = {"name": this.items.splice(rand_idx, 1)[0], "checked": false, moved_to:""};
+              curr_item = {name: this.items.splice(rand_idx, 1)[0], checked: false, moved_to:""};
               this.groups[all_groups[curr_group_idx]].push(curr_item);
               curr_group_idx = (curr_group_idx + 1) % num_groups
           }

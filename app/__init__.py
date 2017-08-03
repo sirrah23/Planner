@@ -54,6 +54,11 @@ class PlansRepo(object):
             })
         return result.inserted_id
 
+    def update(self, link, data):
+        #TODO: Have a validator object validate data
+        res = self.conn.db.plans.update_one({"link": link}, {"$set": data})
+        return res.modified_count == 1
+
 p_repo = PlansRepo(mongo)
 
 

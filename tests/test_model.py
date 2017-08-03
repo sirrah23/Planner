@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import MagicMock
 from tests.utils import insert_link, get_all, drop_collection
 from app import app, PlansRepo, Plan, mongo
 
@@ -63,3 +64,25 @@ class TestPlansInsert(unittest.TestCase):
 
     def tearDown(self):
         drop_collection()
+
+class TestPlansUpdate(unittest.TestCase):
+
+    def setUp(self):
+        self.mongo_mock = MagicMock()
+        self.p_repo = PlansRepo(self.mongo_mock)
+
+    def test_update_existing_link(self):
+        #TODO: Create an anonymous object utility wrapper around this thing...
+        self.mongo_mock.db.plans.update_one.return_value = type('',(object,),{"modified_count":1})()
+        res = self.p_repo.update("lkkkw", {"items":["a", "b"]})
+        self.mongo_mock.db.plans.update_one\
+                .assert_called_with({"link": "lkkkw"}, {"$set":{"items":["a", "b"]}})
+        self.assertEqual(res, True)
+
+    def test_update_nonexistent_link(self):
+        #TODO: Create an anonymous object utility wrapper around this thing...
+        self.mongo_mock.db.plans.update_one.return_value = type('',(object,),{"modified_count":0})()
+        res = self.p_repo.update("lkkkw", {"items":["a", "b"]})
+        self.mongo_mock.db.plans.update_one\
+                .assert_called_with({"link": "lkkkw"}, {"$set":{"items":["a", "b"]}})
+        self.assertEqual(res, False)

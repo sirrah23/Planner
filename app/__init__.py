@@ -29,11 +29,11 @@ class Plan(object):
 
 class PlansRepo(object):
     
-    #TODO: Class level collection variable
+    def __init__(self, conn):
+        self.conn = conn
 
-    @classmethod
-    def get_plan_from_link(cls, link): #TODO: Rename
-        result = mongo.db.plans.find_one({"link": link})
+    def get_plan_from_link(self, link): #TODO: Rename
+        result = self.conn.db.plans.find_one({"link": link})
         if not result:
             return None
         else:
@@ -44,10 +44,9 @@ class PlansRepo(object):
                         groups=result["groups"]
                     )
 
-    @classmethod
     def insert(self, p):
         #TODO: link already exists...
-        result = mongo.db.plans.insert_one(
+        result = self.conn.db.plans.insert_one(
             {
                 "link": p.link,
                 "items": p.items,
@@ -55,10 +54,12 @@ class PlansRepo(object):
             })
         return result.inserted_id
 
+p_repo = PlansRepo(mongo)
+
 
 class Planner(Resource):
     def get(self, plan_link):
-        data = PlansRepo.get_plan_from_link(plan_link)
+        data = p_repo.get_plan_from_link(plan_link)
         if not data:
             abort(404)
         else:
@@ -74,7 +75,7 @@ api.add_resource(Planner, '/api/planner/<string:plan_link>')
 
 @app.route('/<plan_link>')
 def main(plan_link):
-    data = PlansRepo.get_plan_from_link(plan_link)
+    data = p_repo.get_plan_from_link(plan_link)
     if data:
         return render_template('main.html')
     else:

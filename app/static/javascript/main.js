@@ -10,6 +10,9 @@ const plannerApiConn = {
                  cb(response.data);
             }
         });
+    },
+    update(link, data){
+        axios.post("/api/planner/"+link, {data});
     }
 }
 
@@ -53,6 +56,7 @@ const app = new Vue({
               return;
           this.items.push(this.item);
           this.item = "";
+          plannerApiConn.update(getPlannerLinkWindow(), JSON.stringify({items: this.items}));
       },
       add_new_group: function(event){
           if(this.group.length == 0)

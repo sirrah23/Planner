@@ -1,7 +1,8 @@
 from flask import Flask, render_template, abort
-from flask_restful import Resource, Api
+from flask_restful import Resource, Api, reqparse
 from flask_pymongo import PyMongo
 import os
+import json
 
 class CustomFlask(Flask):
     jinja_options = Flask.jinja_options.copy()
@@ -63,6 +64,7 @@ p_repo = PlansRepo(mongo)
 
 
 class Planner(Resource):
+
     def get(self, plan_link):
         data = p_repo.get_plan_from_link(plan_link)
         if not data:
@@ -74,6 +76,15 @@ class Planner(Resource):
                     "groups": data.groups
             }
             return res
+
+    def post(self, plan_link):
+        app.logger.info('Attempting to post on ' + plan_link)
+        parser = reqparse.RequestParser().add_argument('data')
+        args = parser.parse_args()
+        post_data = json.loads(args.data)
+        p_repo.update(plan_link, post_data)
+        app.logger.info(plan_link + " has been updated with " + str(post_data))
+        return 201
 
 
 api.add_resource(Planner, '/api/planner/<string:plan_link>')

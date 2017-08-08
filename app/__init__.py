@@ -80,6 +80,7 @@ api.add_resource(Planner, '/api/planner/<string:plan_link>')
 
 @app.route('/<plan_link>')
 def main(plan_link):
+    app.logger.info('Attempting to obtain link ' + plan_link)
     data = p_repo.get_plan_from_link(plan_link)
     if data:
         return render_template('main.html')

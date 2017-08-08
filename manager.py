@@ -1,6 +1,8 @@
 import unittest
 from flask_script import Manager, Server
 from app import app
+import logging
+from logging.handlers import RotatingFileHandler
 
 manager = Manager(app)
 manager.add_command("runserver", Server())
@@ -15,4 +17,7 @@ def test():
 
 
 if __name__ == "__main__":
+    handler = RotatingFileHandler('app.log', maxBytes=10000, backupCount=1)
+    handler.setLevel(logging.INFO)
+    app.logger.addHandler(handler)
     manager.run()

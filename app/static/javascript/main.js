@@ -32,6 +32,19 @@ const initGroupItems = (groups) => {
     return initialized_groups;
 }
 
+const cleanGroupItem = (item) =>{
+    ({name, checked} = item);
+    return {name, checked};
+}
+
+const cleanGroupItems = (groups) => {
+   const cleaned_groups = {}
+    for (let g in groups){
+        cleaned_groups[g] = groups[g].map( (i) => { return cleanGroupItem(i); } );
+    }
+    return cleaned_groups;
+}
+
 const app = new Vue({
    el: "#planner",
    data: {
@@ -64,6 +77,10 @@ const app = new Vue({
           //FIXME: Group passed in that already exists...
           this.groups[this.group] = []
           this.group = "";
+          // TODO: Async - cleanGroupItems could take a long time...
+          // and it's very repetitive...need to find a way to not 
+          // do this simple operation over and over again...
+          plannerApiConn.update(getPlannerLinkWindow(), JSON.stringify({groups: cleanGroupItems(this.groups)}));
       },
       shuffle_items: function(event){
           /*

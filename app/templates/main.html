@@ -23,7 +23,7 @@
                     {{group_name}}
                     <ul style="list-style-type:none">
                         <li v-for="item in items">
-                            <input type="checkbox" id="checkbox" v-model="item.checked">
+                            <input type="checkbox" id="checkbox" v-model="item.checked" v-on:click="checkItem">
                             <label for="checkbox">{{item.name}}</label>
                             <select v-on:change="move_item(group_name)" v-model="item.moved_to">
                                 <option></option>

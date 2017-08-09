@@ -32,6 +32,7 @@ const initGroupItems = (groups) => {
     return initialized_groups;
 }
 
+//FIXME: Get rid of this way of sending updates...
 const cleanGroupItem = (item) =>{
     ({name, checked} = item);
     return {name, checked};
@@ -78,7 +79,7 @@ const app = new Vue({
           this.groups[this.group] = []
           this.group = "";
           // TODO: Async - cleanGroupItems could take a long time...
-          // and it's very repetitive...need to find a way to not 
+          // and it's very repetitive...need to find a way to not
           // do this simple operation over and over again...
           plannerApiConn.update(getPlannerLinkWindow(), JSON.stringify({groups: cleanGroupItems(this.groups)}));
       },
@@ -102,6 +103,8 @@ const app = new Vue({
               this.groups[all_groups[curr_group_idx]].push(curr_item);
               curr_group_idx = (curr_group_idx + 1) % num_groups
           }
+          plannerApiConn.update(getPlannerLinkWindow(), JSON.stringify({items: this.items}));
+          plannerApiConn.update(getPlannerLinkWindow(), JSON.stringify({groups: cleanGroupItems(this.groups)}));
       },
       move_item: function(group_name){
           let item_to_move;
@@ -121,7 +124,7 @@ const app = new Vue({
           if(item_to_move === undefined)
               return;
 
-          //If the item was somehow moved to a the group it is 
+          //If the item was somehow moved to a the group it is
           //already in somehow then quit.
           if(item_to_move.moved_to === group_name)
               return;
@@ -129,11 +132,18 @@ const app = new Vue({
           const new_group = item_to_move.moved_to;
           item_to_move.moved_to = "";
 
-          //Finally do the actual item move 
+          //Finally do the actual item move
           this.groups[new_group].push(item_to_move)
           const remove_idx = this.groups[group_name].indexOf(item_to_move);
           this.groups[group_name].splice(remove_idx,1);
           this.$forceUpdate();
+          plannerApiConn.update(getPlannerLinkWindow(), JSON.stringify({groups: cleanGroupItems(this.groups)}));
+      },
+      checkItem: function(){
+        //NOTE: Do this upon next tick so the checked property gets updated first for the item
+        Vue.nextTick(() =>{
+          plannerApiConn.update(getPlannerLinkWindow(), JSON.stringify({groups: cleanGroupItems(this.groups)}));
+        });
       },
   },
 });

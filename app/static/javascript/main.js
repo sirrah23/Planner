@@ -21,6 +21,7 @@ const initGroupItem = (item) => {
     group_item.name = item.name;
     group_item.checked = item.checked;
     group_item.moved_to = "";
+    group_item.expanded = false;
     return group_item;
 }
 
@@ -99,7 +100,7 @@ const app = new Vue({
           while(this.items.length > 0){
               rand_idx = Math.floor(Math.random() * this.items.length);
               //TODO: Create a function to generate this object
-              curr_item = {name: this.items.splice(rand_idx, 1)[0], checked: false, moved_to:""};
+              curr_item = initGroupItem({name: this.items.splice(rand_idx, 1)[0], checked: false});
               this.groups[all_groups[curr_group_idx]].push(curr_item);
               curr_group_idx = (curr_group_idx + 1) % num_groups
           }

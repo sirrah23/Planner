@@ -22,6 +22,7 @@ const initGroupItem = (item) => {
     group_item.checked = item.checked;
     group_item.moved_to = "";
     group_item.expanded = false;
+    group_item.deleted = false;
     return group_item;
 }
 
@@ -145,6 +146,15 @@ const app = new Vue({
         Vue.nextTick(() =>{
           plannerApiConn.update(getPlannerLinkWindow(), JSON.stringify({groups: cleanGroupItems(this.groups)}));
         });
+      },
+      deleteItem: function(group_name){
+        const items = this.groups[group_name];
+        for(let i = items.length-1; i >= 0; i--){
+            if (items[i].deleted){
+                items.splice(i, 1);
+            }
+        }
+        plannerApiConn.update(getPlannerLinkWindow(), JSON.stringify({groups: cleanGroupItems(this.groups)}));
       },
   },
 });

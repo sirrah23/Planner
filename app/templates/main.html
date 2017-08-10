@@ -35,6 +35,7 @@
                                         {{group_inner_name}}
                                     </option>
                                 </select>
+                            <button type="button" v-on:click="item.deleted=!item.deleted;deleteItem(group_name)"> Delete </button>
                             </div>
                         </li>
                     </ul>

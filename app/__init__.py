@@ -1,11 +1,11 @@
-from flask import Flask, render_template, abort
-from flask_restful import Resource, Api, reqparse
-from flask_pymongo import PyMongo
 import os
 import json
 import random
 import string
 from collections import namedtuple
+from flask import Flask, render_template, abort
+from flask_restful import Resource, Api, reqparse
+from flask_pymongo import PyMongo
 
 class CustomFlask(Flask):
     jinja_options = Flask.jinja_options.copy()
@@ -101,19 +101,25 @@ class Planner(Resource):
 class PlannerCollection(Resource):
 
     def post(self):
-        app.logger.info('Attempting to post')
-        p_repo.update(plan_link, patch_data)
-        app.logger.info(plan_link + " has been updated with " + str(patch_data))
-        return 201
+        app.logger.info('Attempting to post planner')
+        new_link = p_repo.insert()
+        app.logger.info(new_link + " has been created")
+        return {"link": new_link}, 201
 
 api.add_resource(PlannerCollection, '/api/planner')
 api.add_resource(Planner, '/api/planner/<string:plan_link>')
 
+
+@app.route('/')
+def index():
+    app.logger.info('Directing to index page')
+    return render_template('index.html')
+
 @app.route('/<plan_link>')
-def main(plan_link):
+def planner_app(plan_link):
     app.logger.info('Attempting to obtain link ' + plan_link)
     data = p_repo.get_plan_from_link(plan_link)
     if data:
-        return render_template('main.html')
+        return render_template('app.html')
     else:
         abort(404)

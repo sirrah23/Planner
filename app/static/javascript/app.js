@@ -11,7 +11,7 @@ const plannerApiConn = {
             }
         });
     },
-    update(link, data){
+    patch(link, data){
         axios.patch("/api/planner/"+link, {data});
     }
 }
@@ -72,7 +72,7 @@ const app = new Vue({
               return;
           this.items.push(this.item);
           this.item = "";
-          plannerApiConn.update(getPlannerLinkWindow(), JSON.stringify({items: this.items}));
+          plannerApiConn.patch(getPlannerLinkWindow(), JSON.stringify({items: this.items}));
       },
       add_new_group: function(event){
           if(this.group.length == 0)
@@ -83,7 +83,7 @@ const app = new Vue({
           // TODO: Async - cleanGroupItems could take a long time...
           // and it's very repetitive...need to find a way to not
           // do this simple operation over and over again...
-          plannerApiConn.update(getPlannerLinkWindow(), JSON.stringify({groups: cleanGroupItems(this.groups)}));
+          plannerApiConn.patch(getPlannerLinkWindow(), JSON.stringify({groups: cleanGroupItems(this.groups)}));
       },
       shuffle_items: function(event){
           /*
@@ -105,8 +105,9 @@ const app = new Vue({
               this.groups[all_groups[curr_group_idx]].push(curr_item);
               curr_group_idx = (curr_group_idx + 1) % num_groups
           }
-          plannerApiConn.update(getPlannerLinkWindow(), JSON.stringify({items: this.items}));
-          plannerApiConn.update(getPlannerLinkWindow(), JSON.stringify({groups: cleanGroupItems(this.groups)}));
+          //TODO: Can do this in one put request instead...
+          plannerApiConn.patch(getPlannerLinkWindow(), JSON.stringify({items: this.items}));
+          plannerApiConn.patch(getPlannerLinkWindow(), JSON.stringify({groups: cleanGroupItems(this.groups)}));
       },
       move_item: function(group_name){
           let item_to_move;
@@ -139,12 +140,12 @@ const app = new Vue({
           const remove_idx = this.groups[group_name].indexOf(item_to_move);
           this.groups[group_name].splice(remove_idx,1);
           this.$forceUpdate();
-          plannerApiConn.update(getPlannerLinkWindow(), JSON.stringify({groups: cleanGroupItems(this.groups)}));
+          plannerApiConn.patch(getPlannerLinkWindow(), JSON.stringify({groups: cleanGroupItems(this.groups)}));
       },
       checkItem: function(){
         //NOTE: Do this upon next tick so the checked property gets updated first for the item
         Vue.nextTick(() =>{
-          plannerApiConn.update(getPlannerLinkWindow(), JSON.stringify({groups: cleanGroupItems(this.groups)}));
+          plannerApiConn.patch(getPlannerLinkWindow(), JSON.stringify({groups: cleanGroupItems(this.groups)}));
         });
       },
       deleteItem: function(group_name){
@@ -154,7 +155,7 @@ const app = new Vue({
                 items.splice(i, 1);
             }
         }
-        plannerApiConn.update(getPlannerLinkWindow(), JSON.stringify({groups: cleanGroupItems(this.groups)}));
+        plannerApiConn.patch(getPlannerLinkWindow(), JSON.stringify({groups: cleanGroupItems(this.groups)}));
       },
   },
 });

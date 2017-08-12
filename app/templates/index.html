@@ -1,0 +1,24 @@
+<html>
+    <head>
+        <meta charset="UTF-8"> 
+        <script src=%% url_for("static", filename="bower_components/axios/dist/axios.js") %%></script>
+        <link rel="stylesheet" href=%% url_for("static", filename="css/style.css") %%>
+    </head>
+    <body>
+        <h2>Planner</h2>
+        <button onclick="generate_plan()">Generate</button>
+    </body>
+    <script>
+        function redirect(link){
+            window.location = "http://localhost:5000/" + link;
+        }
+        function generate_plan(){
+            const headers = new Headers();
+            const params = {method:"POST"};
+            axios.post('/api/planner').then(function(res){
+                const new_plan_link = res.data.link
+                redirect(new_plan_link);
+            });
+        }
+    </script>
+</html>

@@ -3,6 +3,9 @@ from flask_restful import Resource, Api, reqparse
 from flask_pymongo import PyMongo
 import os
 import json
+import random
+import string
+from collections import namedtuple
 
 class CustomFlask(Flask):
     jinja_options = Flask.jinja_options.copy()
@@ -20,18 +23,20 @@ app.config.from_object(os.environ.get('APP_CONFIG'))
 api = Api(app)
 mongo = PyMongo(app)
 
-class Plan(object):
+class Plan(namedtuple('Plan', ['obj_id', 'link', 'items', 'groups'])):
+    """Wrapper to override constructor so that this named tuple 
+    can be given default arguments."""
 
-    def __init__(self, link, items=[], groups={}, obj_id=None):
-        self.obj_id = obj_id
-        self.link = link
-        self.items = items
-        self.groups = groups
+    def __new__(cls, link, obj_id=None, items=[], groups={}):
+        return super(Plan, cls).__new__(cls, obj_id, link, items, groups)
 
 class PlansRepo(object):
     
     def __init__(self, conn):
         self.conn = conn
+
+    def generate_link(self, l=10):
+        return ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(l))
 
     def get_plan_from_link(self, link): #TODO: Rename
         result = self.conn.db.plans.find_one({"link": link})
@@ -45,15 +50,22 @@ class PlansRepo(object):
                         groups=result["groups"]
                     )
 
-    def insert(self, p):
+    def insert(self, p=None):
         #TODO: link already exists...
-        result = self.conn.db.plans.insert_one(
-            {
-                "link": p.link,
-                "items": p.items,
-                "groups": p.groups
-            })
-        return result.inserted_id
+        if not p:
+            link = self.generate_link()
+            while self.get_plan_from_link(link):
+                link = self.generate_link()
+            to_insert = Plan(link)
+        else:
+            link = p.link
+            to_insert = p
+        result = self.conn.db.plans.insert_one({
+            "link": to_insert.link,
+            "items": to_insert.items,
+            "groups": to_insert.groups
+        })
+        return link
 
     def update(self, link, data):
         #TODO: Have a validator object validate data
@@ -77,16 +89,24 @@ class Planner(Resource):
             }
             return res
 
-    def post(self, plan_link):
-        app.logger.info('Attempting to post on ' + plan_link)
+    def patch(self, plan_link):
+        app.logger.info('Attempting to patch on ' + plan_link)
         parser = reqparse.RequestParser().add_argument('data')
         args = parser.parse_args()
-        post_data = json.loads(args.data)
-        p_repo.update(plan_link, post_data)
-        app.logger.info(plan_link + " has been updated with " + str(post_data))
+        patch_data = json.loads(args.data)
+        p_repo.update(plan_link, patch_data)
+        app.logger.info(plan_link + " has been updated with " + str(patch_data))
         return 201
 
+class PlannerCollection(Resource):
 
+    def post(self):
+        app.logger.info('Attempting to post')
+        p_repo.update(plan_link, patch_data)
+        app.logger.info(plan_link + " has been updated with " + str(patch_data))
+        return 201
+
+api.add_resource(PlannerCollection, '/api/planner')
 api.add_resource(Planner, '/api/planner/<string:plan_link>')
 
 @app.route('/<plan_link>')

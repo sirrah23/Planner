@@ -12,7 +12,7 @@ const plannerApiConn = {
         });
     },
     update(link, data){
-        axios.post("/api/planner/"+link, {data});
+        axios.patch("/api/planner/"+link, {data});
     }
 }
 

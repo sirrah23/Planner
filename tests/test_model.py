@@ -47,7 +47,6 @@ class TestPlansInsert(unittest.TestCase):
         inserted_id =self.p_repo.insert(p_to_insert)
         p_inserted =self.p_repo.get_plan_from_link("qwerty")
         self.assertEqual(get_all().count(), 1)
-        self.assertEqual(inserted_id, p_inserted.obj_id)
         self.assertEqual(p_inserted.link, "qwerty")
         self.assertEqual(p_inserted.items, [])
         self.assertEqual(p_inserted.groups, {})
@@ -57,9 +56,16 @@ class TestPlansInsert(unittest.TestCase):
         inserted_id =self.p_repo.insert(p_to_insert)
         p_inserted =self.p_repo.get_plan_from_link("qwerty")
         self.assertEqual(get_all().count(), 1)
-        self.assertEqual(inserted_id, p_inserted.obj_id)
         self.assertEqual(p_inserted.link, "qwerty")
         self.assertEqual(p_inserted.items, ["a", "b", "c"])
+        self.assertEqual(p_inserted.groups, {})
+
+    def test_insert_empty_argument(self):
+        inserted_id =self.p_repo.insert()
+        p_inserted =self.p_repo.get_plan_from_link(inserted_id)
+        self.assertEqual(get_all().count(), 1)
+        self.assertEqual(p_inserted.link, inserted_id)
+        self.assertEqual(p_inserted.items, [])
         self.assertEqual(p_inserted.groups, {})
 
     def tearDown(self):

@@ -3,6 +3,7 @@
         <meta charset="UTF-8"> 
         <script src=%% url_for("static", filename="bower_components/vue/dist/vue.js") %%></script>
         <script src=%% url_for("static", filename="bower_components/axios/dist/axios.js") %%></script>
+        <link rel="stylesheet" href=%% url_for("static", filename="css/style.css") %%>
     </head>
     <body>
         <div id="planner" class="container">
@@ -25,7 +26,12 @@
                         <li v-for="item in items">
                             <input type="checkbox" id="checkbox" v-model="item.checked" v-on:click="checkItem">
                             <label for="checkbox">{{item.name}}</label>
-                            <button type="button" v-on:click="item.expanded=!item.expanded"> Expand </button>
+                            <button
+                                class="dropdown_button"
+                                type="button"
+                                v-on:click="item.expanded=!item.expanded">
+                                &#9660;
+                            </button>
                             <div class="item_interactions" v-if="item.expanded" >
                                 <select v-on:change="move_item(group_name)" v-model="item.moved_to">
                                     <option></option>

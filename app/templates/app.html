@@ -16,6 +16,7 @@
             <ul id="all_item_list">
                 <li v-for="item in items">
                     {{item}}
+                    <button type="button" v-on:click="deleteItem(item)"> Delete </button>
                 </li>    
             </ul>
             <h3>Groups</h3>
@@ -41,7 +42,7 @@
                                         {{group_inner_name}}
                                     </option>
                                 </select>
-                            <button type="button" v-on:click="item.deleted=!item.deleted;deleteItem(group_name)"> Delete </button>
+                            <button type="button" v-on:click="item.deleted=!item.deleted;deleteItemFromGroup(group_name)"> Delete </button>
                             </div>
                         </li>
                     </ul>

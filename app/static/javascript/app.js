@@ -148,7 +148,15 @@ const app = new Vue({
           plannerApiConn.patch(getPlannerLinkWindow(), JSON.stringify({groups: cleanGroupItems(this.groups)}));
         });
       },
-      deleteItem: function(group_name){
+      deleteItem: function(item){
+        for(let i = 0; i < this.items.length; i++){
+            if(this.items[i] === item){
+                this.items.splice(i,1);
+            }
+        }
+        plannerApiConn.patch(getPlannerLinkWindow(), JSON.stringify({items: this.items}));
+      },
+      deleteItemFromGroup: function(group_name){
         const items = this.groups[group_name];
         for(let i = items.length-1; i >= 0; i--){
             if (items[i].deleted){

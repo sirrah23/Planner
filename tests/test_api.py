@@ -11,7 +11,7 @@ class TestPlannerApiDataGet(unittest.TestCase):
     def test_get_planner_no_data(self):
         self.p_repo.insert(Plan(link="lkkkw", items=["a","b","c"]))
         with app.test_client() as c:
-            rv = c.get('/api/planner/lkkkw')
+            rv = c.get('/api/v1/planner/lkkkw')
             data = json.loads(rv.data)
             self.assertEqual(data['link'], "lkkkw")
             self.assertEqual(data['items'], ["a","b","c"])

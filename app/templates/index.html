@@ -15,7 +15,7 @@
         function generate_plan(){
             const headers = new Headers();
             const params = {method:"POST"};
-            axios.post('/api/planner').then(function(res){
+            axios.post('/api/v1/planner').then(function(res){
                 const new_plan_link = res.data.link
                 redirect(new_plan_link);
             });

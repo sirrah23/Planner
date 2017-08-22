@@ -4,7 +4,7 @@ const getPlannerLinkWindow = () => {
 
 const plannerApiConn = {
     get(link, cb){
-        axios.get("/api/planner/"+link)
+        axios.get("/api/v1/planner/"+link)
         .then(function(response){
              if(cb){
                  cb(response.data);
@@ -12,7 +12,7 @@ const plannerApiConn = {
         });
     },
     patch(link, data){
-        axios.patch("/api/planner/"+link, {data});
+        axios.patch("/api/v1/planner/"+link, {data});
     }
 }
 

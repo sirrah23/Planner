@@ -77,8 +77,8 @@ p_repo = PlansRepo(mongo)
 
 class Planner(Resource):
 
-    def get(self, plan_link):
-        data = p_repo.get_plan_from_link(plan_link)
+    def get(self, link):
+        data = p_repo.get_plan_from_link(link)
         if not data:
             abort(404)
         else:
@@ -89,16 +89,14 @@ class Planner(Resource):
             }
             return res
 
-    def patch(self, plan_link):
-        app.logger.info('Attempting to patch on ' + plan_link)
+    def patch(self, link):
+        app.logger.info('Attempting to patch on ' + link)
         parser = reqparse.RequestParser().add_argument('data')
         args = parser.parse_args()
         patch_data = json.loads(args.data)
-        p_repo.update(plan_link, patch_data)
-        app.logger.info(plan_link + " has been updated with " + str(patch_data))
+        p_repo.update(link, patch_data)
+        app.logger.info(link + " has been updated with " + str(patch_data))
         return 201
-
-class PlannerCollection(Resource):
 
     def post(self):
         app.logger.info('Attempting to post planner')
@@ -106,19 +104,28 @@ class PlannerCollection(Resource):
         app.logger.info(new_link + " has been created")
         return {"link": new_link}, 201
 
-api.add_resource(PlannerCollection, '/api/planner')
-api.add_resource(Planner, '/api/planner/<string:plan_link>')
 
+class Item(Resource):
+    pass
+
+
+class Group(Resource):
+    pass
+
+
+api.add_resource(Planner, '/api/v1/planner', '/api/v1/planner/<string:link>')
+api.add_resource(Item, '/api/v1/planner/<string:link>/item', '/api/v1/planner/<string:link>/item/:id')
+api.add_resource(Group, '/api/v1/planner/<string:link>/group', '/api/v1/planner/<string:link>/group/:id')
 
 @app.route('/')
 def index():
     app.logger.info('Directing to index page')
     return render_template('index.html')
 
-@app.route('/<plan_link>')
-def planner_app(plan_link):
-    app.logger.info('Attempting to obtain link ' + plan_link)
-    data = p_repo.get_plan_from_link(plan_link)
+@app.route('/<link>')
+def planner_app(link):
+    app.logger.info('Attempting to obtain link ' + link)
+    data = p_repo.get_plan_from_link(link)
     if data:
         return render_template('app.html')
     else:

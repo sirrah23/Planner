@@ -47,21 +47,29 @@ class PlansRepo(object):
         pipeline = [
             {"$match": {"link": link_id}},
             {"$lookup":{"from":"groups", "localField":"group", "foreignField":"_id", "as":"group"}},
-            {"$project":{"_id":1, "checked":1, "link":1, "group":{"$let":{"vars":{"field":{"$arrayElemAt":["$group",0]}},"in": "$$field.name"}}}},
+            {"$project":{"_id":1, "checked":1, "link":1, "name":1, "group":{"$let":{"vars":{"field":{"$arrayElemAt":["$group",0]}},"in": "$$field.name"}}}},
             {"$group": {"_id":"$group", "items":{"$push":"$$ROOT"}}}
         ]
         result = self.conn.db.items.aggregate(pipeline)
         if not result:
-            return None
+            return Plan(
+                        link=link,
+                        items=[],
+                        groups= {}
+                    )
         planner = {}
         planner["link"] = link
+        planner["items"] = []
         planner["groups"] = {}
         for r in result:
             if not r["_id"]:
                 planner["items"] = r["items"]
             else:
                 planner["groups"][r["_id"]] = r["items"]
-        print(planner)
+        group_data = self.conn.db.groups.find({"link":link_id})
+        for g in group_data:
+            if g["name"] not in planner["groups"]:
+                planner["groups"][g["name"]] = []
         return Plan(
                     link=planner["link"],
                     items=planner["items"],

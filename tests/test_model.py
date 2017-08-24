@@ -27,7 +27,9 @@ class TestPlansGet(unittest.TestCase):
         insert_item("c", link_id)
         res =self.p_repo.get_plan_from_link("abcdef")
         self.assertEquals(res.link, "abcdef")
-        self.assertEquals(res.items, ["a", "b", "c"])
+        item_names = map(lambda i: i['name'], res.items)
+        for i in ["a", "b", "c"]:
+            self.assertEquals(i in item_names,True)
         self.assertEquals(res.groups, {})
 
     def test_get_link_items_and_groups(self):
@@ -39,9 +41,14 @@ class TestPlansGet(unittest.TestCase):
         insert_item("c", link_id)
         insert_item("aa", link_id, group_id=group_id)
         res =self.p_repo.get_plan_from_link("abcdef")
+        item_names = map(lambda i: i['name'], res.items)
+        for i in ["a", "b", "c"]:
+            self.assertEquals(i in item_names,True)
+        self.assertEqual("groupA" in res.groups.keys(),True)
+        self.assertEqual("groupB" in res.groups.keys(),True)
+        self.assertEqual(len(res.groups["groupA"]),0)
+        self.assertEqual(len(res.groups["groupB"]),1)
         self.assertEquals(res.link, "abcdef")
-        self.assertEquals(res.items, ["a", "b", "c"])
-        self.assertEquals(res.groups, {"groupA":[], "groupB": ["aa"]})
 
     def tearDown(self):
         drop_collection()
@@ -73,7 +80,6 @@ class TestPlansInsert(unittest.TestCase):
         inserted_id =self.p_repo.insert()
         p_inserted =self.p_repo.get_plan_from_link(inserted_id)
         self.assertEqual(get_all().count(), 1)
-        self.assertEqual(p_inserted.link, inserted_id)
         self.assertEqual(p_inserted.items, [])
         self.assertEqual(p_inserted.groups, {})
 

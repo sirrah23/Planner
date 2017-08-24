@@ -2,6 +2,7 @@ import os
 import json
 import random
 import string
+from bson import ObjectId
 from collections import namedtuple
 from flask import Flask, render_template, abort
 from flask_restful import Resource, Api, reqparse
@@ -39,16 +40,33 @@ class PlansRepo(object):
         return ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(l))
 
     def get_plan_from_link(self, link): #TODO: Rename
-        result = self.conn.db.plans.find_one({"link": link})
+        link_data = self.conn.db.links.find_one({"link":link})
+        if not link_data:
+            return None
+        link_id = link_data["_id"]
+        pipeline = [
+            {"$match": {"link": link_id}},
+            {"$lookup":{"from":"groups", "localField":"group", "foreignField":"_id", "as":"group"}},
+            {"$project":{"_id":1, "checked":1, "link":1, "group":{"$let":{"vars":{"field":{"$arrayElemAt":["$group",0]}},"in": "$$field.name"}}}},
+            {"$group": {"_id":"$group", "items":{"$push":"$$ROOT"}}}
+        ]
+        result = self.conn.db.items.aggregate(pipeline)
         if not result:
             return None
-        else:
-            return Plan(
-                        obj_id = result["_id"],
-                        link=result["link"],
-                        items=result["items"],
-                        groups=result["groups"]
-                    )
+        planner = {}
+        planner["link"] = link
+        planner["groups"] = {}
+        for r in result:
+            if not r["_id"]:
+                planner["items"] = r["items"]
+            else:
+                planner["groups"][r["_id"]] = r["items"]
+        print(planner)
+        return Plan(
+                    link=planner["link"],
+                    items=planner["items"],
+                    groups=planner["groups"]
+                )
 
     def insert(self, p=None):
         #TODO: link already exists...

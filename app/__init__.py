@@ -41,9 +41,11 @@ class PlansRepo(object):
         return ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(l))
 
     def get_plan_from_link(self, link): #TODO: Rename
+        app.logger.info("Reading link from database")
         link_data = self.conn.db.links.find_one({"link":link})
         if not link_data:
             return None
+        app.logger.info("Link found - getting items and groups")
         link_id = link_data["_id"]
         pipeline = [
             {"$match": {"link": link_id}},
@@ -53,11 +55,13 @@ class PlansRepo(object):
         ]
         result = self.conn.db.items.aggregate(pipeline)
         if not result:
+            app.logger.info("Empty data - returning plan")
             return Plan(
                         link=link,
                         items=[],
                         groups= {}
                     )
+        app.logger.info("Building items + groups into plan")
         planner = {}
         planner["link"] = link
         planner["items"] = []
@@ -71,6 +75,11 @@ class PlansRepo(object):
         for g in group_data:
             if g["name"] not in planner["groups"]:
                 planner["groups"][g["name"]] = []
+        app.logger.info("Data has been built")
+        for item in planner["items"]:
+            # TODO: Actual method somewhere else
+            item["_id"] = str(item["_id"])
+            item["link"] = str(item["link"])
         return Plan(
                     link=planner["link"],
                     items=planner["items"],
@@ -125,16 +134,19 @@ i_repo = ItemRepo(mongo)
 class Planner(Resource):
 
     def get(self, link):
+        app.logger.info("Get request for Planner resource: " + link)
+        app.logger.info("Attempting to get data from Planner repo: " + link)
         data = p_repo.get_plan_from_link(link)
         if not data:
             abort(404)
         else:
-            res = {
-                    "link": data.link,
-                    "items": data.items,
-                    "groups": data.groups
-            }
-            return res
+            app.logger.info("Data retrieval successful for: " + link)
+            app.logger.info(data)
+            resp = {}
+            resp["link"] = data.link
+            resp["items"] = data.items
+            resp["groups"] = data.groups
+            return resp, 201
 
 
 class Link(Resource):

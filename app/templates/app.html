@@ -15,7 +15,9 @@
             <h3>Item List <button v-on:click="shuffle_items">Shuffle</button> </h3>
             <ul id="all_item_list">
                 <li v-for="item in items">
-                    {{item}}
+                        <div v-bind:id=item._id>
+                            {{item.name}}
+                        </div>
                     <button type="button" v-on:click="deleteItem(item)"> Delete </button>
                 </li>    
             </ul>

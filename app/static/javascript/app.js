@@ -16,6 +16,13 @@ const plannerApiConn = {
     }
 }
 
+const itemApiConn = {
+  post(link, data){
+    console.log(data);
+    axios.post("/api/v1/planner/"+link+"/item", {data});
+  }
+}
+
 const initGroupItem = (item) => {
     const group_item = {};
     group_item.name = item.name;
@@ -71,8 +78,8 @@ const app = new Vue({
           if(this.item.length == 0)
               return;
           this.items.push(this.item);
+          itemApiConn.post(getPlannerLinkWindow(), JSON.stringify({name: this.item}));
           this.item = "";
-          plannerApiConn.patch(getPlannerLinkWindow(), JSON.stringify({items: this.items}));
       },
       add_new_group: function(event){
           if(this.group.length == 0)

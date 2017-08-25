@@ -36,6 +36,7 @@ class PlansRepo(object):
     def __init__(self, conn):
         self.conn = conn
 
+    #TODO: Move
     def generate_link(self, l=10):
         return ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(l))
 
@@ -76,30 +77,50 @@ class PlansRepo(object):
                     groups=planner["groups"]
                 )
 
-    def insert(self, p=None):
-        #TODO: link already exists...
-        if not p:
-            link = self.generate_link()
-            while self.get_plan_from_link(link):
-                link = self.generate_link()
-            to_insert = Plan(link)
-        else:
-            link = p.link
-            to_insert = p
-        result = self.conn.db.plans.insert_one({
-            "link": to_insert.link,
-            "items": to_insert.items,
-            "groups": to_insert.groups
-        })
-        return link
+class LinkRepo(object):
 
-    def update(self, link, data):
-        #TODO: Have a validator object validate data
-        res = self.conn.db.plans.update_one({"link": link}, {"$set": data})
-        return res.modified_count == 1
+    def __init__(self, conn):
+        self.conn = conn
+
+    def generate_link_text(self, l=10):
+        return ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(l))
+
+    def create_link(self):
+        app.logger.info('Attempting to create a link')
+        new_link_text = self.generate_link_text()
+        app.logger.info('Link text generated ' + new_link_text)
+        inserted_id = self.conn.db.links.insert_one({"link": new_link_text}).inserted_id
+        app.logger.info('Link inserted with id ' + str(inserted_id))
+        return {"_id": str(inserted_id), "link": new_link_text}
+
+    def get_obj_id_link(self, link):
+        return self.conn.db.links.find_one({"link":link})["_id"]
+
+
+class ItemRepo(object):
+
+    def __init__(self, conn):
+        self.conn = conn
+
+    def create_item(self, name, link_id, checked=False, group_id=""):
+        app.logger.info('Attempting to create item with name ' + name)
+        link_id_text = str(link_id)
+        app.logger.info('Link for item creation is ' + link_id_text)
+        item_data_to_insert = {'name': name,'checked': checked,'link': link_id,'group': group_id}
+        inserted_id = self.conn.db.items.insert_one(item_data_to_insert).inserted_id
+        item_data_to_insert["_id"] = str(inserted_id)
+        item_data_to_insert["link"] = link_id_text
+        app.logger.info('Item was created ' + str(item_data_to_insert))
+        return item_data_to_insert
+
+
+class GroupRepo(object):
+    pass
+
 
 p_repo = PlansRepo(mongo)
-
+l_repo = LinkRepo(mongo)
+i_repo = ItemRepo(mongo)
 
 class Planner(Resource):
 
@@ -115,31 +136,45 @@ class Planner(Resource):
             }
             return res
 
-    def patch(self, link):
-        app.logger.info('Attempting to patch on ' + link)
-        parser = reqparse.RequestParser().add_argument('data')
-        args = parser.parse_args()
-        patch_data = json.loads(args.data)
-        p_repo.update(link, patch_data)
-        app.logger.info(link + " has been updated with " + str(patch_data))
-        return 201
+
+class Link(Resource):
 
     def post(self):
-        app.logger.info('Attempting to post planner')
-        new_link = p_repo.insert()
-        app.logger.info(new_link + " has been created")
-        return {"link": new_link}, 201
+        new_link_data = l_repo.create_link()
+        app.logger.info('Sending new link back ' + str(new_link_data))
+        return new_link_data, 201
 
 
 class Item(Resource):
-    pass
+
+    def post(self, link):
+        # Grab arguments from request
+        app.logger.info("Creating item at " + link)
+        parser = reqparse.RequestParser()
+        parser.add_argument('data')
+        args = parser.parse_args()
+        app.logger.info("Item creation arguments: " + str(args))
+
+        # Convert argument to JSON
+        args_json = json.loads(args.data)
+        app.logger.info("Argument converted to JSON")
+
+        # Get Object ID for link as it is the FK for items
+        link_id = l_repo.get_obj_id_link(link)
+        app.logger.info("Link ObjectID Obtained")
+
+        # Create the item!
+        app.logger.info("Starting new item creation")
+        new_item_data = i_repo.create_item(args_json['name'], link_id)
+        return new_item_data, 201
 
 
 class Group(Resource):
     pass
 
 
-api.add_resource(Planner, '/api/v1/planner', '/api/v1/planner/<string:link>')
+api.add_resource(Link, '/api/v1/planner')
+api.add_resource(Planner, '/api/v1/planner/<string:link>')
 api.add_resource(Item, '/api/v1/planner/<string:link>/item', '/api/v1/planner/<string:link>/item/:id')
 api.add_resource(Group, '/api/v1/planner/<string:link>/group', '/api/v1/planner/<string:link>/group/:id')
 

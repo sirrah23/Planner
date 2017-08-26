@@ -25,6 +25,15 @@ const itemApiConn = {
   }
 }
 
+const groupApiConn = {
+  post(link, data){
+    return axios.post("/api/v1/planner/"+link+"/group", {data});
+  },
+  delete(link, _id){
+    return axios.delete("/api/v1/planner/"+link+"/group/"+_id);
+  }
+}
+
 const initGroupItem = (item) => {
     const group_item = {};
     group_item.name = item.name;
@@ -87,12 +96,11 @@ const app = new Vue({
           if(this.group.length == 0)
               return;
           //FIXME: Group passed in that already exists...
-          this.groups[this.group] = []
-          this.group = "";
-          // TODO: Async - cleanGroupItems could take a long time...
-          // and it's very repetitive...need to find a way to not
-          // do this simple operation over and over again...
-          plannerApiConn.patch(getPlannerLinkWindow(), JSON.stringify({groups: cleanGroupItems(this.groups)}));
+          groupApiConn.post(getPlannerLinkWindow(), JSON.stringify({name: this.group}))
+              .then(() =>{
+                  app.groups[app.group] = []
+                  app.group = "";
+              });
       },
       shuffle_items: function(event){
           /*

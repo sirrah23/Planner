@@ -127,12 +127,25 @@ class ItemRepo(object):
 
 
 class GroupRepo(object):
-    pass
+    
+    def __init__(self, conn):
+        self.conn = conn
 
+    def create_group(self, name, link_id):
+        app.logger.info('Attempting to create group with name ' + name)
+        link_id_text = str(link_id)
+        app.logger.info('Link for group creation is ' + link_id_text)
+        group_data_to_insert = {'name': name, 'link': link_id}
+        inserted_id = self.conn.db.groups.insert_one(group_data_to_insert).inserted_id
+        group_data_to_insert["_id"] = str(inserted_id)
+        group_data_to_insert["link"] = link_id_text
+        app.logger.info('Group was created ' + str(group_data_to_insert))
+        return group_data_to_insert
 
 p_repo = PlansRepo(mongo)
 l_repo = LinkRepo(mongo)
 i_repo = ItemRepo(mongo)
+g_repo = GroupRepo(mongo)
 
 class Planner(Resource):
 
@@ -197,7 +210,27 @@ class Item(Resource):
         return deleted_count, 201
 
 class Group(Resource):
-    pass
+
+    def post(self, link):
+        # Grab arguments from request
+        app.logger.info("Creating group at " + link)
+        parser = reqparse.RequestParser()
+        parser.add_argument('data')
+        args = parser.parse_args()
+        app.logger.info("Group creation arguments: " + str(args))
+
+        # Convert argument to JSON
+        args_json = json.loads(args.data)
+        app.logger.info("Argument converted to JSON")
+
+        # Get Object ID for link as it is the FK for groups
+        link_id = l_repo.get_obj_id_link(link)
+        app.logger.info("Link ObjectID Obtained")
+
+        # Create the group!
+        app.logger.info("Starting new group creation")
+        new_group_data = g_repo.create_group(args_json['name'], link_id)
+        return new_group_data, 201
 
 
 api.add_resource(Link, '/api/v1/planner')

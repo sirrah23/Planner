@@ -22,6 +22,10 @@ const itemApiConn = {
   },
   delete(link, _id){
     return axios.delete("/api/v1/planner/"+link+"/item/"+_id);
+  },
+  patch(link, _id, data){
+    console.log(`Attempting to patch item ${_id} on ${link} with ${data}`);
+    axios.patch("/api/v1/planner/"+link, {data});
   }
 }
 
@@ -35,10 +39,9 @@ const groupApiConn = {
 }
 
 const initGroupItem = (item) => {
-    const group_item = {};
-    group_item.name = item.name;
-    group_item.checked = item.checked;
+    const group_item = Object.assign({}, item);
     group_item.moved_to = "";
+    group_item.checked = false;
     group_item.expanded = false;
     group_item.deleted = false;
     return group_item;
@@ -118,8 +121,11 @@ const app = new Vue({
           while(this.items.length > 0){
               rand_idx = Math.floor(Math.random() * this.items.length);
               //TODO: Create a function to generate this object
-              curr_item = initGroupItem({name: this.items.splice(rand_idx, 1)[0], checked: false});
+              curr_item = initGroupItem(this.items.splice(rand_idx, 1)[0]);
+              console.log(curr_item);
+              //TODO: group_name -> group_id
               this.groups[all_groups[curr_group_idx]].push(curr_item);
+              itemApiConn.patch(getPlannerLinkWindow(), curr_item._id, {"group_name": all_groups[curr_group_idx]})
               curr_group_idx = (curr_group_idx + 1) % num_groups
           }
           //TODO: Can do this in one put request instead...

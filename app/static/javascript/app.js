@@ -18,8 +18,10 @@ const plannerApiConn = {
 
 const itemApiConn = {
   post(link, data){
-    console.log(data);
     return axios.post("/api/v1/planner/"+link+"/item", {data});
+  },
+  delete(link, _id){
+    return axios.delete("/api/v1/planner/"+link+"/item/"+_id);
   }
 }
 
@@ -155,13 +157,13 @@ const app = new Vue({
           plannerApiConn.patch(getPlannerLinkWindow(), JSON.stringify({groups: cleanGroupItems(this.groups)}));
         });
       },
-      deleteItem: function(item){
+      deleteItem: function(item_id){
         for(let i = 0; i < this.items.length; i++){
-            if(this.items[i] === item){
+            if(this.items[i]._id === item_id){
                 this.items.splice(i,1);
             }
         }
-        plannerApiConn.patch(getPlannerLinkWindow(), JSON.stringify({items: this.items}));
+        itemApiConn.delete(getPlannerLinkWindow(), item_id);
       },
       deleteItemFromGroup: function(group_name){
         const items = this.groups[group_name];

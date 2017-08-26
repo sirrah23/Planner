@@ -12,8 +12,7 @@ class CustomFlask(Flask):
     jinja_options = Flask.jinja_options.copy()
     jinja_options.update(dict(
         block_start_string='<%',
-        block_end_string='%>',
-        variable_start_string='%%',
+        block_end_string='%>', variable_start_string='%%',
         variable_end_string='%%',
         comment_start_string='<#',
         comment_end_string='#>',
@@ -122,6 +121,10 @@ class ItemRepo(object):
         app.logger.info('Item was created ' + str(item_data_to_insert))
         return item_data_to_insert
 
+    def delete_item(self, item_id):
+        app.logger.info('Starting delete for item with ObjectId: ' + str(item_id))
+        return self.conn.db.items.delete_one({"_id": item_id}).deleted_count
+
 
 class GroupRepo(object):
     pass
@@ -180,6 +183,18 @@ class Item(Resource):
         new_item_data = i_repo.create_item(args_json['name'], link_id)
         return new_item_data, 201
 
+    def delete(self, link, _id):
+        # Grab arguments from request
+        app.logger.info("Delete item at " + link)
+        app.logger.info("Item to delete is " + _id)
+
+        # Convert item string id into Object ID
+        item_id = ObjectId(_id)
+
+        # Delete the item!
+        app.logger.info("Starting item deletion")
+        deleted_count = i_repo.delete_item(item_id)
+        return deleted_count, 201
 
 class Group(Resource):
     pass
@@ -187,8 +202,8 @@ class Group(Resource):
 
 api.add_resource(Link, '/api/v1/planner')
 api.add_resource(Planner, '/api/v1/planner/<string:link>')
-api.add_resource(Item, '/api/v1/planner/<string:link>/item', '/api/v1/planner/<string:link>/item/:id')
-api.add_resource(Group, '/api/v1/planner/<string:link>/group', '/api/v1/planner/<string:link>/group/:id')
+api.add_resource(Item, '/api/v1/planner/<string:link>/item', '/api/v1/planner/<string:link>/item/<string:_id>')
+api.add_resource(Group, '/api/v1/planner/<string:link>/group', '/api/v1/planner/<string:link>/group/<string:_id>')
 
 @app.route('/')
 def index():

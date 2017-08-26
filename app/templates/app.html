@@ -18,7 +18,7 @@
                         <div v-bind:id=item._id>
                             {{item.name}}
                         </div>
-                    <button type="button" v-on:click="deleteItem(item)"> Delete </button>
+                    <button type="button" v-on:click="deleteItem(item._id)"> Delete </button>
                 </li>    
             </ul>
             <h3>Groups</h3>

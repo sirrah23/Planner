@@ -73,9 +73,9 @@ class PlansRepo(object):
         group_data = self.conn.db.groups.find({"link":link_id})
         for g in group_data:
             if g["name"] not in planner["groups"]:
-                planner["groups"][g["name"]] = {"_id":g["_id"], "items":[]}
+                planner["groups"][g["name"]] = {"_id":str(g["_id"]), "items":[]}
             else:
-                planner["groups"][g["name"]]["_id"] = g["_id"]
+                planner["groups"][g["name"]]["_id"] = str(g["_id"])
         app.logger.info("Data has been built")
         for item in planner["items"]:
             # TODO: Actual method somewhere else
@@ -122,6 +122,18 @@ class ItemRepo(object):
         item_data_to_insert["link"] = link_id_text
         app.logger.info('Item was created ' + str(item_data_to_insert))
         return item_data_to_insert
+
+    def update_item(self, item_id, link_id, data):
+        app.logger.info('Attempting to update item ' + item_id + " with data " + str(data))
+        updated_fields = {}
+        for k, v in data.items():
+            if k == "group":
+                updated_fields[k] = ObjectId(v)
+            else:
+                updated_fields[k] = v
+        item_objid = ObjectId(item_id)
+        link_objid = ObjectId(link_id)
+        return self.conn.db.items.update_one({"_id": item_objid, "link": link_objid}, {"$set": updated_fields}, upsert=False).modified_count
 
     def delete_item(self, item_id):
         app.logger.info('Starting delete for item with ObjectId: ' + str(item_id))
@@ -209,6 +221,29 @@ class Item(Resource):
         app.logger.info("Starting item deletion")
         deleted_count = i_repo.delete_item(item_id)
         return deleted_count, 201
+
+    def patch(self, link, _id):
+        app.logger.info("Patching item " + _id + " @ " + link)
+
+        # Grab arguments from request
+        app.logger.info("Parsing argument for patch")
+        parser = reqparse.RequestParser()
+        parser.add_argument('data')
+        args = parser.parse_args()
+        app.logger.info("Item patch arguments: " + str(args))
+
+        # Convert argument to JSON
+        args_json = json.loads(args.data)
+        app.logger.info("Argument converted to JSON")
+
+        # Get Object ID for link as it is the FK for items
+        link_id = l_repo.get_obj_id_link(link)
+        app.logger.info("Link ObjectID Obtained")
+
+        # Finally patch the item!
+        app.logger.info("Begin the item update")
+        updated_count = i_repo.update_item(_id, link_id, args_json)
+        return updated_count, 201
 
 class Group(Resource):
 

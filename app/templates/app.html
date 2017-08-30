@@ -19,14 +19,15 @@
                             {{item.name}}
                         </div>
                     <button type="button" v-on:click="deleteItem(item._id)"> Delete </button>
-                </li>    
+                </li>
             </ul>
             <h3>Groups</h3>
             <ul>
-                <li v-for="(items, group_name, _) in groups">
+                <li v-for="(group_data, group_name, _) in groups">
+                   <!-- TODO: group_data._id...use it -->
                     {{group_name}}
                     <ul style="list-style-type:none">
-                        <li v-for="item in items">
+                        <li v-for="item in group_data.items">
                             <input type="checkbox" id="checkbox" v-model="item.checked" v-on:click="checkItem">
                             <label for="checkbox">{{item.name}}</label>
                             <button
@@ -48,7 +49,7 @@
                             </div>
                         </li>
                     </ul>
-                </li>    
+                </li>
             </ul>
         </div>
         <!--TODO: See if this can be done once window has been loaded-->

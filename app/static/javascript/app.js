@@ -1,5 +1,5 @@
 const getPlannerLinkWindow = () => {
-    return window.location.href.split(/\//).pop()
+    return window.location.href.split(/\//).pop();
 }
 
 const plannerApiConn = {
@@ -11,9 +11,11 @@ const plannerApiConn = {
             }
         });
     },
+    /*
     patch(link, data){
         axios.patch("/api/v1/planner/"+link, {data});
     }
+    */
 }
 
 const itemApiConn = {
@@ -25,7 +27,7 @@ const itemApiConn = {
   },
   patch(link, _id, data){
     console.log(`Attempting to patch item ${_id} on ${link} with ${data}`);
-    axios.patch("/api/v1/planner/"+link, {data});
+    axios.patch("/api/v1/planner/"+link+"/item/"+_id, {data});
   }
 }
 
@@ -50,7 +52,7 @@ const initGroupItem = (item) => {
 const initGroupItems = (groups) => {
     const initialized_groups = {};
     for (let g in groups){
-        initialized_groups[g] = groups[g].map( (i) => { return initGroupItem(i); } );
+      initialized_groups[g] = { _id: groups[g]._id, items:groups[g].items.map( (i) => { return initGroupItem(i); } ) };
     }
     return initialized_groups;
 }
@@ -62,7 +64,7 @@ const cleanGroupItem = (item) =>{
 }
 
 const cleanGroupItems = (groups) => {
-   const cleaned_groups = {}
+    const cleaned_groups = {};
     for (let g in groups){
         cleaned_groups[g] = groups[g].map( (i) => { return cleanGroupItem(i); } );
     }
@@ -100,8 +102,9 @@ const app = new Vue({
               return;
           //FIXME: Group passed in that already exists...
           groupApiConn.post(getPlannerLinkWindow(), JSON.stringify({name: this.group}))
-              .then(() =>{
-                  app.groups[app.group] = []
+              .then((posted_group_data) =>{
+                  app.groups[app.group]._id = posted_group_data._id;
+                  app.groups[app.group].items = [];
                   app.group = "";
               });
       },
@@ -114,7 +117,7 @@ const app = new Vue({
           / time.
          */
           const all_groups = Object.keys(this.groups);
-          const num_groups = all_groups.length
+          const num_groups = all_groups.length;
           if(num_groups == 0)
               return;
           let curr_item, rand_idx, curr_group_idx = 0;
@@ -124,13 +127,11 @@ const app = new Vue({
               curr_item = initGroupItem(this.items.splice(rand_idx, 1)[0]);
               console.log(curr_item);
               //TODO: group_name -> group_id
-              this.groups[all_groups[curr_group_idx]].push(curr_item);
-              itemApiConn.patch(getPlannerLinkWindow(), curr_item._id, {"group_name": all_groups[curr_group_idx]})
-              curr_group_idx = (curr_group_idx + 1) % num_groups
+              this.groups[all_groups[curr_group_idx]].items.push(curr_item);
+              console.log(app.groups[all_groups[curr_group_idx]]);
+              itemApiConn.patch(getPlannerLinkWindow(), curr_item._id, JSON.stringify({group: this.groups[all_groups[curr_group_idx]]._id}));
+              curr_group_idx = (curr_group_idx + 1) % num_groups;
           }
-          //TODO: Can do this in one put request instead...
-          plannerApiConn.patch(getPlannerLinkWindow(), JSON.stringify({items: this.items}));
-          plannerApiConn.patch(getPlannerLinkWindow(), JSON.stringify({groups: cleanGroupItems(this.groups)}));
       },
       move_item: function(group_name){
           let item_to_move;
@@ -142,7 +143,7 @@ const app = new Vue({
               //Can't just do app.groups=... and app.items=... directly in the
               //create method; have to initialize with proper fields
               if(!["", undefined].includes(this.groups[group_name][i].moved_to)){
-                  item_to_move = this.groups[group_name][i]
+                  item_to_move = this.groups[group_name][i];
                   break;
               }
           }
@@ -159,7 +160,7 @@ const app = new Vue({
           item_to_move.moved_to = "";
 
           //Finally do the actual item move
-          this.groups[new_group].push(item_to_move)
+          this.groups[new_group].push(item_to_move);
           const remove_idx = this.groups[group_name].indexOf(item_to_move);
           this.groups[group_name].splice(remove_idx,1);
           this.$forceUpdate();

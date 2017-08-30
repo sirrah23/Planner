@@ -31,7 +31,7 @@ class Plan(namedtuple('Plan', ['obj_id', 'link', 'items', 'groups'])):
         return super(Plan, cls).__new__(cls, obj_id, link, items, groups)
 
 class PlansRepo(object):
-    
+
     def __init__(self, conn):
         self.conn = conn
 
@@ -69,11 +69,13 @@ class PlansRepo(object):
             if not r["_id"]:
                 planner["items"] = r["items"]
             else:
-                planner["groups"][r["_id"]] = r["items"]
+                planner["groups"][r["_id"]] = {"_id": None, "items": r["items"]}
         group_data = self.conn.db.groups.find({"link":link_id})
         for g in group_data:
             if g["name"] not in planner["groups"]:
-                planner["groups"][g["name"]] = []
+                planner["groups"][g["name"]] = {"_id":g["_id"], "items":[]}
+            else:
+                planner["groups"][g["name"]]["_id"] = g["_id"]
         app.logger.info("Data has been built")
         for item in planner["items"]:
             # TODO: Actual method somewhere else
@@ -127,7 +129,7 @@ class ItemRepo(object):
 
 
 class GroupRepo(object):
-    
+
     def __init__(self, conn):
         self.conn = conn
 
@@ -199,8 +201,7 @@ class Item(Resource):
     def delete(self, link, _id):
         # Grab arguments from request
         app.logger.info("Delete item at " + link)
-        app.logger.info("Item to delete is " + _id)
-
+        app.logger.info("Item to delete is " + _id) 
         # Convert item string id into Object ID
         item_id = ObjectId(_id)
 

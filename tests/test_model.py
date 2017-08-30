@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 from tests.utils import insert_link, insert_item, insert_group,get_all, drop_collection
 from app import app, PlansRepo, Plan, mongo
 
-    
+
 class TestPlansGet(unittest.TestCase):
 
     def setUp(self):
@@ -46,10 +46,10 @@ class TestPlansGet(unittest.TestCase):
             self.assertEquals(i in item_names,True)
         self.assertEqual("groupA" in res.groups.keys(),True)
         self.assertEqual("groupB" in res.groups.keys(),True)
-        self.assertEqual(len(res.groups["groupA"]),0)
-        self.assertEqual(len(res.groups["groupB"]),1)
+        self.assertEqual(len(res.groups["groupA"]["items"]),0)
+        self.assertEqual(len(res.groups["groupB"]["items"]),1)
         self.assertEquals(res.link, "abcdef")
 
     def tearDown(self):
         drop_collection()
-        
+

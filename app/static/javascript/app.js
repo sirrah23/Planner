@@ -103,7 +103,8 @@ const app = new Vue({
           //FIXME: Group passed in that already exists...
           groupApiConn.post(getPlannerLinkWindow(), JSON.stringify({name: this.group}))
               .then((posted_group_data) =>{
-                  app.groups[app.group]._id = posted_group_data._id;
+                  app.groups[app.group] = {};
+                  app.groups[app.group]._id = posted_group_data.data._id;
                   app.groups[app.group].items = [];
                   app.group = "";
               });

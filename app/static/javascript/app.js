@@ -27,7 +27,7 @@ const itemApiConn = {
   },
   patch(link, _id, data){
     console.log(`Attempting to patch item ${_id} on ${link} with ${data}`);
-    axios.patch("/api/v1/planner/"+link+"/item/"+_id, {data});
+    return axios.patch("/api/v1/planner/"+link+"/item/"+_id, {data});
   }
 }
 
@@ -94,7 +94,7 @@ const app = new Vue({
           if(this.item.length == 0)
               return;
           itemApiConn.post(getPlannerLinkWindow(), JSON.stringify({name: this.item}))
-            .then( (new_item) => { console.log(new_item);app.items.push(new_item.data); } );
+            .then( (new_item) => { app.items.push(new_item.data); } );
           this.item = "";
       },
       add_new_group: function(event){
@@ -126,10 +126,8 @@ const app = new Vue({
               rand_idx = Math.floor(Math.random() * this.items.length);
               //TODO: Create a function to generate this object
               curr_item = initGroupItem(this.items.splice(rand_idx, 1)[0]);
-              console.log(curr_item);
               //TODO: group_name -> group_id
               this.groups[all_groups[curr_group_idx]].items.push(curr_item);
-              console.log(app.groups[all_groups[curr_group_idx]]);
               itemApiConn.patch(getPlannerLinkWindow(), curr_item._id, JSON.stringify({group: this.groups[all_groups[curr_group_idx]]._id}));
               curr_group_idx = (curr_group_idx + 1) % num_groups;
           }
@@ -139,12 +137,12 @@ const app = new Vue({
           let i;
 
           //Find the item that we are supposed to try and move
-          for(i = 0; i < this.groups[group_name].length; i++){
+          for(i = 0; i < this.groups[group_name].items.length; i++){
               //FIXME: Hack until proper data communicator object is created...
               //Can't just do app.groups=... and app.items=... directly in the
               //create method; have to initialize with proper fields
-              if(!["", undefined].includes(this.groups[group_name][i].moved_to)){
-                  item_to_move = this.groups[group_name][i];
+              if(!["", undefined].includes(this.groups[group_name].items[i].moved_to)){
+                  item_to_move = this.groups[group_name].items[i];
                   break;
               }
           }
@@ -157,15 +155,20 @@ const app = new Vue({
           if(item_to_move.moved_to === group_name)
               return;
 
+          const curr_item_id = item_to_move._id;
           const new_group = item_to_move.moved_to;
+          const new_group_id = this.groups[new_group]._id;
           item_to_move.moved_to = "";
 
           //Finally do the actual item move
-          this.groups[new_group].push(item_to_move);
-          const remove_idx = this.groups[group_name].indexOf(item_to_move);
-          this.groups[group_name].splice(remove_idx,1);
-          this.$forceUpdate();
-          plannerApiConn.patch(getPlannerLinkWindow(), JSON.stringify({groups: cleanGroupItems(this.groups)}));
+          itemApiConn.patch(getPlannerLinkWindow(), curr_item_id, JSON.stringify({group: new_group_id}))
+              .then(() => {
+                  //Once the group for the item is updated on the backend update it on the UI as well...
+                  app.groups[new_group].items.push(item_to_move);
+                  const remove_idx = app.groups[group_name].items.indexOf(item_to_move);
+                  app.groups[group_name].items.splice(remove_idx,1);
+                  app.$forceUpdate();
+              });
       },
       checkItem: function(){
         //NOTE: Do this upon next tick so the checked property gets updated first for the item

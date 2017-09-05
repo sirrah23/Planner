@@ -39,7 +39,10 @@ class PlansRepo(object):
     def generate_link(self, l=10):
         return ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(l))
 
-    def get_plan_from_link(self, link): #TODO: Rename
+    #TODO: Rename
+    #TODO: Can this method be simplified/split up?
+    #TODO: Use some of the other repositories?
+    def get_plan_from_link(self, link): 
         app.logger.info("Reading link from database")
         link_data = self.conn.db.links.find_one({"link":link})
         if not link_data:
@@ -49,8 +52,7 @@ class PlansRepo(object):
         pipeline = [
             {"$match": {"link": link_id}},
             {"$lookup":{"from":"groups", "localField":"group", "foreignField":"_id", "as":"group"}},
-            {"$project":{"_id":1, "checked":1, "link":1, "name":1, "group":{"$let":{"vars":{"field":{"$arrayElemAt":["$group",0]}},"in": "$$field.name"}}}},
-            {"$group": {"_id":"$group", "items":{"$push":"$$ROOT"}}}
+            {"$project":{"_id":1, "checked":1, "name":1, "group":{"$let":{"vars":{"field":{"$arrayElemAt":["$group",0]}},"in": "$$field.name"}}}},
         ]
         result = self.conn.db.items.aggregate(pipeline)
         if not result:
@@ -66,21 +68,19 @@ class PlansRepo(object):
         planner["items"] = []
         planner["groups"] = {}
         for r in result:
-            if not r["_id"]:
-                planner["items"] = r["items"]
+            r["_id"] = str(r["_id"])
+            if "group" in r:
+                if r["group"] not in planner["groups"]:
+                    planner["groups"][r["group"]] = {"items": []}
+                planner["groups"][r["group"]]["items"] += [r]
             else:
-                planner["groups"][r["_id"]] = {"_id": None, "items": r["items"]}
-        group_data = self.conn.db.groups.find({"link":link_id})
+                planner["items"] += [r]
+        group_data = self.conn.db.groups.find({"link": link_id})
         for g in group_data:
             if g["name"] not in planner["groups"]:
                 planner["groups"][g["name"]] = {"_id":str(g["_id"]), "items":[]}
             else:
                 planner["groups"][g["name"]]["_id"] = str(g["_id"])
-        app.logger.info("Data has been built")
-        for item in planner["items"]:
-            # TODO: Actual method somewhere else
-            item["_id"] = str(item["_id"])
-            item["link"] = str(item["link"])
         return Plan(
                     link=planner["link"],
                     items=planner["items"],

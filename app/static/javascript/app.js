@@ -185,13 +185,17 @@ const app = new Vue({
         itemApiConn.delete(getPlannerLinkWindow(), item_id);
       },
       deleteItemFromGroup: function(group_name){
-        const items = this.groups[group_name];
+        //NOTE: Assumption, can only delete one item at a time...
+        const items = this.groups[group_name].items;
         for(let i = items.length-1; i >= 0; i--){
             if (items[i].deleted){
-                items.splice(i, 1);
+                itemApiConn.delete(getPlannerLinkWindow(), items[i]._id)
+                    .then(() => {
+                        items.splice(i, 1);
+                    });
+                return;
             }
         }
-        plannerApiConn.patch(getPlannerLinkWindow(), JSON.stringify({groups: cleanGroupItems(this.groups)}));
       },
   },
 });

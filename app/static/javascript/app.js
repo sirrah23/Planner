@@ -41,12 +41,13 @@ const groupApiConn = {
 }
 
 const initGroupItem = (item) => {
-    const group_item = Object.assign({}, item);
-    group_item.moved_to = "";
-    group_item.checked = false;
-    group_item.expanded = false;
-    group_item.deleted = false;
-    return group_item;
+    const defaults = {
+        moved_to: "",
+        checked: false,
+        expanded: false,
+        deleted: false,
+    }
+    return Object.assign({}, defaults, item);
 }
 
 const initGroupItems = (groups) => {
@@ -170,10 +171,12 @@ const app = new Vue({
                   app.$forceUpdate();
               });
       },
-      checkItem: function(){
+      checkItem: function(item){
+        const item_id = item._id;
+        const toggled_check = !item.checked;
         //NOTE: Do this upon next tick so the checked property gets updated first for the item
         Vue.nextTick(() =>{
-          plannerApiConn.patch(getPlannerLinkWindow(), JSON.stringify({groups: cleanGroupItems(this.groups)}));
+          itemApiConn.patch(getPlannerLinkWindow(), item_id, JSON.stringify({checked: toggled_check}))
         });
       },
       deleteItem: function(item_id){

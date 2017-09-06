@@ -28,7 +28,7 @@
                     {{group_name}}
                     <ul style="list-style-type:none">
                         <li v-for="item in group_data.items">
-                            <input type="checkbox" id="checkbox" v-model="item.checked" v-on:click="checkItem">
+                            <input type="checkbox" id="checkbox" v-model="item.checked" v-on:click="checkItem(item)">
                             <label for="checkbox">{{item.name}}</label>
                             <button
                                 class="dropdown_button"

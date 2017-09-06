@@ -1,7 +1,8 @@
 import unittest
 from unittest.mock import MagicMock
 from tests.utils import insert_link, insert_item, insert_group,get_all, drop_collection
-from app import app, PlansRepo, Plan, mongo
+from app import app, PlansRepo, Plan, mongo, ItemRepo
+from bson import ObjectId
 
 
 class TestPlansGet(unittest.TestCase):
@@ -53,3 +54,34 @@ class TestPlansGet(unittest.TestCase):
     def tearDown(self):
         drop_collection()
 
+
+class TestItemsGet(unittest.TestCase):
+
+    def setUp(self):
+       self.i_repo = ItemRepo(mongo)
+
+    def test_get_items_empty_group(self):
+        test_group_id = "A" * 24
+        res = self.i_repo.get_items_by_group_id(test_group_id)
+        self.assertEqual(res, [])
+
+    def test_get_items_one_item_group(self):
+        test_group_id = "A" * 24 #should have length 24
+        test_link_id = "B" * 24 #should have length 24
+        inserted_item_id = self.i_repo.create_item("test", ObjectId(test_link_id), group_id=ObjectId(test_group_id))["_id"]
+        res = self.i_repo.get_items_by_group_id(test_group_id)
+        self.assertTrue(inserted_item_id in res)
+
+    def test_get_items_three_items_group(self):
+        test_group_id = "A" * 24 #should have length 24
+        test_link_id = "B" * 24 #should have length 24
+        inserted_item_ids = []
+        inserted_item_ids.append(self.i_repo.create_item("test", ObjectId(test_link_id), group_id=ObjectId(test_group_id))["_id"])
+        inserted_item_ids.append(self.i_repo.create_item("test2", ObjectId(test_link_id), group_id=ObjectId(test_group_id))["_id"])
+        inserted_item_ids.append(self.i_repo.create_item("test3", ObjectId(test_link_id), group_id=ObjectId(test_group_id))["_id"])
+        res = self.i_repo.get_items_by_group_id(test_group_id)
+        for item_id in inserted_item_ids:
+            self.assertTrue(item_id in res)
+
+    def tearDown(self):
+        drop_collection()

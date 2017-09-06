@@ -139,6 +139,11 @@ class ItemRepo(object):
         app.logger.info('Starting delete for item with ObjectId: ' + str(item_id))
         return self.conn.db.items.delete_one({"_id": item_id}).deleted_count
 
+    def get_items_by_group_id(self, group_id):
+        app.logger.info('Getting items for group: ' + group_id)
+        items = self.conn.db.items.find({"group": ObjectId(group_id)})
+        return list(map(lambda i: str(i["_id"]), items))
+
 
 class GroupRepo(object):
 

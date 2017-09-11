@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock
-from tests.utils import insert_link, insert_item, insert_group,get_all, drop_collection
-from app import app, PlansRepo, Plan, mongo, ItemRepo
+from tests.utils import insert_link, insert_item, insert_group,get_all, drop_collection, get_all_groups, get_all_items
+from app import app, PlansRepo, Plan, mongo, ItemRepo, GroupRepo, LinkRepo
 from bson import ObjectId
 
 
@@ -66,6 +66,7 @@ class TestItemsGet(unittest.TestCase):
         self.assertEqual(res, [])
 
     def test_get_items_one_item_group(self):
+        #TODO: Move id generator to a utility function
         test_group_id = "A" * 24 #should have length 24
         test_link_id = "B" * 24 #should have length 24
         inserted_item_id = self.i_repo.create_item("test", ObjectId(test_link_id), group_id=ObjectId(test_group_id))["_id"]
@@ -85,3 +86,41 @@ class TestItemsGet(unittest.TestCase):
 
     def tearDown(self):
         drop_collection()
+
+class TestGroupDelete(unittest.TestCase):
+
+    def setUp(self):
+        self.g_repo = GroupRepo(mongo)
+        self.i_repo = ItemRepo(mongo)
+        self.l_repo = LinkRepo(mongo)
+
+    def test_delete_empty_group(self):
+        test_link_id = self.l_repo.create_link()["_id"]
+        test_group = "My Group"
+        test_group_id = self.g_repo.create_group(name=test_group, link_id=ObjectId(test_link_id))["_id"]
+        self.assertEquals(len(get_all_groups()), 1)
+
+        self.g_repo.delete_group(test_group_id, self.i_repo)
+
+        self.assertEquals(len(get_all_groups()), 0)
+
+    def test_delete_group_with_items(self):
+        test_link_id = self.l_repo.create_link()["_id"]
+        test_group = "My Group"
+        test_group_id = self.g_repo.create_group(name=test_group, link_id=ObjectId(test_link_id))["_id"]
+
+        self.i_repo.create_item("test", ObjectId(test_link_id), group_id=ObjectId(test_group_id))
+        self.i_repo.create_item("test2", ObjectId(test_link_id), group_id=ObjectId(test_group_id))
+        self.i_repo.create_item("test3", ObjectId(test_link_id), group_id=ObjectId(test_group_id))
+
+        self.assertEquals(len(get_all_items()), 3)
+        self.assertEquals(len(get_all_groups()), 1)
+
+        self.g_repo.delete_group(test_group_id, self.i_repo)
+
+        self.assertEquals(len(get_all_groups()), 0)
+        self.assertEquals(len(get_all_items()), 0)
+
+    def tearDown(self):
+        drop_collection()
+

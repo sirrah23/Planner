@@ -10,8 +10,14 @@ def insert_group(name, link_id):
 	return mongo.db.groups.insert_one({'name': name,'link': link_id,}).inserted_id
     
 def get_all():
-    return mongo.db.plans.find()
+    return list(mongo.db.plans.find())
     
+def get_all_groups():
+	return list(mongo.db.groups.find())
+
+def get_all_items():
+    return list(mongo.db.items.find())
+	
 def drop_collection():
     mongo.db.links.drop()
     mongo.db.items.drop()

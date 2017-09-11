@@ -153,13 +153,36 @@ class GroupRepo(object):
     def create_group(self, name, link_id):
         app.logger.info('Attempting to create group with name ' + name)
         link_id_text = str(link_id)
+
         app.logger.info('Link for group creation is ' + link_id_text)
         group_data_to_insert = {'name': name, 'link': link_id}
         inserted_id = self.conn.db.groups.insert_one(group_data_to_insert).inserted_id
         group_data_to_insert["_id"] = str(inserted_id)
         group_data_to_insert["link"] = link_id_text
+
         app.logger.info('Group was created ' + str(group_data_to_insert))
         return group_data_to_insert
+
+    def delete_group(self, group_id, item_repo):
+        app.logger.info('Attempting to delete group ' + group_id)
+
+        group_item_ids = item_repo.get_items_by_group_id(group_id)
+
+        group_obj_id = ObjectId(group_id)
+
+        #Note: What if this fails?
+        group_deleted_count = self.conn.db.groups.delete_one({"_id": group_obj_id}).deleted_count
+        app.logger.info('Number of groups deleted: ' + str(group_deleted_count))
+
+        app.logger.info('Attempting to delete items from group ' + group_id)
+        for item_id in group_item_ids:
+            #Note: What if this fails?...
+            item_repo.delete_item(ObjectId(item_id))
+        
+        app.logger.info('Deletion for group ' + group_id + " is complete")
+
+        return 1
+
 
 p_repo = PlansRepo(mongo)
 l_repo = LinkRepo(mongo)

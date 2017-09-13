@@ -26,6 +26,7 @@
                 <li v-for="(group_data, group_name, _) in groups">
                    <!-- TODO: group_data._id...use it -->
                     {{group_name}}
+                    <button type="button" v-on:click="delete_group(group_data._id)"> Delete </button>
                     <ul style="list-style-type:none">
                         <li v-for="item in group_data.items">
                             <input type="checkbox" id="checkbox" v-model="item.checked" v-on:click="checkItem(item)">

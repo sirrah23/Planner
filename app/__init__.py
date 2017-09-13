@@ -296,6 +296,16 @@ class Group(Resource):
         new_group_data = g_repo.create_group(args_json['name'], link_id)
         return new_group_data, 201
 
+    def delete(self, link, _id):
+        # Grab arguments from request
+        app.logger.info("Delete group at " + link)
+        app.logger.info("Group to delete is " + _id) 
+
+        # Delete the group!
+        app.logger.info("Starting group deletion")
+        deleted_count = g_repo.delete_group(_id, i_repo)
+        return deleted_count, 201
+
 
 api.add_resource(Link, '/api/v1/planner')
 api.add_resource(Planner, '/api/v1/planner/<string:link>')

@@ -11,11 +11,6 @@ const plannerApiConn = {
             }
         });
     },
-    /*
-    patch(link, data){
-        axios.patch("/api/v1/planner/"+link, {data});
-    }
-    */
 }
 
 const itemApiConn = {
@@ -199,6 +194,19 @@ const app = new Vue({
                 return;
             }
         }
+      },
+      delete_group: function(group_id){
+        groupApiConn.delete(getPlannerLinkWindow(), group_id)
+          .then((res) => {
+            if(res.data !== 1) //1 refers to 1 group deleted on the server
+              return
+            for(let g in app.groups){
+              if(app.groups[g]._id == group_id){
+                Vue.delete(app.groups, g); //Update UI once server responds w/success
+                return;
+              }
+            }
+          });
       },
   },
 });

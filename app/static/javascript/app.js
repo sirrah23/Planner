@@ -106,18 +106,12 @@ const app = new Vue({
               });
       },
       shuffle_items: function(event){
-          /*
-          / TODO: The algorithm should not always
-          / start at the first group because if the
-          / user repeatedly adds on item and shuffles
-          / then the first user will get that object every
-          / time.
-         */
           const all_groups = Object.keys(this.groups);
           const num_groups = all_groups.length;
           if(num_groups == 0)
               return;
-          let curr_item, rand_idx, curr_group_idx = 0;
+          let curr_item, rand_idx = 0;
+          let curr_group_idx = Math.floor(Math.random()*num_groups);
           while(this.items.length > 0){
               rand_idx = Math.floor(Math.random() * this.items.length);
               //TODO: Create a function to generate this object

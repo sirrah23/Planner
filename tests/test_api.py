@@ -12,9 +12,9 @@ class TestPlannerApiDataGet(unittest.TestCase):
 
     def test_get_planner_no_data(self):
         new_link = self.l_repo.create_link()
-        self.i_repo.create_item('a', ObjectId(new_link['_id']))
-        self.i_repo.create_item('b', ObjectId(new_link['_id']))
-        self.i_repo.create_item('c', ObjectId(new_link['_id']))
+        self.i_repo.create_item('a', new_link['_id'])
+        self.i_repo.create_item('b', new_link['_id'])
+        self.i_repo.create_item('c', new_link['_id'])
         with app.test_client() as c:
             rv = c.get('/api/v1/planner/' + new_link['link'])
             data = json.loads(rv.data)

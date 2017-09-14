@@ -104,7 +104,7 @@ class LinkRepo(object):
         return {"_id": str(inserted_id), "link": new_link_text}
 
     def get_obj_id_link(self, link):
-        return self.conn.db.links.find_one({"link":link})["_id"]
+        return str(self.conn.db.links.find_one({"link":link})["_id"])
 
 
 class ItemRepo(object):
@@ -114,12 +114,16 @@ class ItemRepo(object):
 
     def create_item(self, name, link_id, checked=False, group_id=""):
         app.logger.info('Attempting to create item with name ' + name)
-        link_id_text = str(link_id)
-        app.logger.info('Link for item creation is ' + link_id_text)
-        item_data_to_insert = {'name': name,'checked': checked,'link': link_id,'group': group_id}
+        app.logger.info('Link for item creation is ' + link_id)
+        link_obj_id = ObjectId(link_id)
+        if group_id:
+            group_obj_id = ObjectId(group_id)
+        else:
+            group_obj_id = ""
+        item_data_to_insert = {'name': name,'checked': checked,'link': link_obj_id,'group': group_obj_id}
         inserted_id = self.conn.db.items.insert_one(item_data_to_insert).inserted_id
         item_data_to_insert["_id"] = str(inserted_id)
-        item_data_to_insert["link"] = link_id_text
+        item_data_to_insert["link"] = link_id
         app.logger.info('Item was created ' + str(item_data_to_insert))
         return item_data_to_insert
 
@@ -136,8 +140,8 @@ class ItemRepo(object):
         return self.conn.db.items.update_one({"_id": item_objid, "link": link_objid}, {"$set": updated_fields}, upsert=False).modified_count
 
     def delete_item(self, item_id):
-        app.logger.info('Starting delete for item with ObjectId: ' + str(item_id))
-        return self.conn.db.items.delete_one({"_id": item_id}).deleted_count
+        app.logger.info('Starting delete for item with ObjectId: ' + item_id)
+        return self.conn.db.items.delete_one({"_id": ObjectId(item_id)}).deleted_count
 
     def get_items_by_group_id(self, group_id):
         app.logger.info('Getting items for group: ' + group_id)
@@ -152,13 +156,11 @@ class GroupRepo(object):
 
     def create_group(self, name, link_id):
         app.logger.info('Attempting to create group with name ' + name)
-        link_id_text = str(link_id)
-
-        app.logger.info('Link for group creation is ' + link_id_text)
-        group_data_to_insert = {'name': name, 'link': link_id}
+        app.logger.info('Link for group creation is ' + link_id)
+        group_data_to_insert = {'name': name, 'link': ObjectId(link_id)}
         inserted_id = self.conn.db.groups.insert_one(group_data_to_insert).inserted_id
         group_data_to_insert["_id"] = str(inserted_id)
-        group_data_to_insert["link"] = link_id_text
+        group_data_to_insert["link"] = link_id
 
         app.logger.info('Group was created ' + str(group_data_to_insert))
         return group_data_to_insert
@@ -177,7 +179,7 @@ class GroupRepo(object):
         app.logger.info('Attempting to delete items from group ' + group_id)
         for item_id in group_item_ids:
             #Note: What if this fails?...
-            item_repo.delete_item(ObjectId(item_id))
+            item_repo.delete_item(item_id)
         
         app.logger.info('Deletion for group ' + group_id + " is complete")
 
@@ -242,12 +244,10 @@ class Item(Resource):
         # Grab arguments from request
         app.logger.info("Delete item at " + link)
         app.logger.info("Item to delete is " + _id) 
-        # Convert item string id into Object ID
-        item_id = ObjectId(_id)
 
         # Delete the item!
         app.logger.info("Starting item deletion")
-        deleted_count = i_repo.delete_item(item_id)
+        deleted_count = i_repo.delete_item(_id)
         return deleted_count, 201
 
     def patch(self, link, _id):

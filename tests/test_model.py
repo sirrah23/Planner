@@ -69,7 +69,7 @@ class TestItemsGet(unittest.TestCase):
         #TODO: Move id generator to a utility function
         test_group_id = "A" * 24 #should have length 24
         test_link_id = "B" * 24 #should have length 24
-        inserted_item_id = self.i_repo.create_item("test", ObjectId(test_link_id), group_id=ObjectId(test_group_id))["_id"]
+        inserted_item_id = self.i_repo.create_item("test", test_link_id, group_id=test_group_id)["_id"]
         res = self.i_repo.get_items_by_group_id(test_group_id)
         self.assertTrue(inserted_item_id in res)
 
@@ -77,9 +77,9 @@ class TestItemsGet(unittest.TestCase):
         test_group_id = "A" * 24 #should have length 24
         test_link_id = "B" * 24 #should have length 24
         inserted_item_ids = []
-        inserted_item_ids.append(self.i_repo.create_item("test", ObjectId(test_link_id), group_id=ObjectId(test_group_id))["_id"])
-        inserted_item_ids.append(self.i_repo.create_item("test2", ObjectId(test_link_id), group_id=ObjectId(test_group_id))["_id"])
-        inserted_item_ids.append(self.i_repo.create_item("test3", ObjectId(test_link_id), group_id=ObjectId(test_group_id))["_id"])
+        inserted_item_ids.append(self.i_repo.create_item("test", test_link_id, group_id=test_group_id)["_id"])
+        inserted_item_ids.append(self.i_repo.create_item("test2", test_link_id, group_id=test_group_id)["_id"])
+        inserted_item_ids.append(self.i_repo.create_item("test3", test_link_id, group_id=test_group_id)["_id"])
         res = self.i_repo.get_items_by_group_id(test_group_id)
         for item_id in inserted_item_ids:
             self.assertTrue(item_id in res)
@@ -97,7 +97,7 @@ class TestGroupDelete(unittest.TestCase):
     def test_delete_empty_group(self):
         test_link_id = self.l_repo.create_link()["_id"]
         test_group = "My Group"
-        test_group_id = self.g_repo.create_group(name=test_group, link_id=ObjectId(test_link_id))["_id"]
+        test_group_id = self.g_repo.create_group(name=test_group, link_id=test_link_id)["_id"]
         self.assertEquals(len(get_all_groups()), 1)
 
         self.g_repo.delete_group(test_group_id, self.i_repo)
@@ -107,11 +107,11 @@ class TestGroupDelete(unittest.TestCase):
     def test_delete_group_with_items(self):
         test_link_id = self.l_repo.create_link()["_id"]
         test_group = "My Group"
-        test_group_id = self.g_repo.create_group(name=test_group, link_id=ObjectId(test_link_id))["_id"]
+        test_group_id = self.g_repo.create_group(name=test_group, link_id=test_link_id)["_id"]
 
-        self.i_repo.create_item("test", ObjectId(test_link_id), group_id=ObjectId(test_group_id))
-        self.i_repo.create_item("test2", ObjectId(test_link_id), group_id=ObjectId(test_group_id))
-        self.i_repo.create_item("test3", ObjectId(test_link_id), group_id=ObjectId(test_group_id))
+        self.i_repo.create_item("test", test_link_id, group_id=test_group_id)
+        self.i_repo.create_item("test2", test_link_id, group_id=test_group_id)
+        self.i_repo.create_item("test3", test_link_id, group_id=test_group_id)
 
         self.assertEquals(len(get_all_items()), 3)
         self.assertEquals(len(get_all_groups()), 1)

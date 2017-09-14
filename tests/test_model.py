@@ -1,14 +1,15 @@
 import unittest
 from unittest.mock import MagicMock
 from tests.utils import insert_link, insert_item, insert_group,get_all, drop_collection, get_all_groups, get_all_items
-from app import app, PlansRepo, Plan, mongo, ItemRepo, GroupRepo, LinkRepo
+from app import app, mongo
+from app.models.models import PlansRepo, Plan, ItemRepo, GroupRepo, LinkRepo
 from bson import ObjectId
 
 
 class TestPlansGet(unittest.TestCase):
 
     def setUp(self):
-       self.p_repo = PlansRepo(mongo)
+       self.p_repo = PlansRepo(app, mongo)
 
     def test_get_nonexistent_link(self):
         res=self.p_repo.get_plan_from_link("abcdef")
@@ -58,7 +59,7 @@ class TestPlansGet(unittest.TestCase):
 class TestItemsGet(unittest.TestCase):
 
     def setUp(self):
-       self.i_repo = ItemRepo(mongo)
+       self.i_repo = ItemRepo(app, mongo)
 
     def test_get_items_empty_group(self):
         test_group_id = "A" * 24
@@ -90,9 +91,9 @@ class TestItemsGet(unittest.TestCase):
 class TestGroupDelete(unittest.TestCase):
 
     def setUp(self):
-        self.g_repo = GroupRepo(mongo)
-        self.i_repo = ItemRepo(mongo)
-        self.l_repo = LinkRepo(mongo)
+        self.g_repo = GroupRepo(app, mongo)
+        self.i_repo = ItemRepo(app, mongo)
+        self.l_repo = LinkRepo(app, mongo)
 
     def test_delete_empty_group(self):
         test_link_id = self.l_repo.create_link()["_id"]

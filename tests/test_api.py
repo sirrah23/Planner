@@ -2,13 +2,14 @@ import unittest
 from flask import json
 from bson import ObjectId
 from tests.utils import drop_collection
-from app import app, LinkRepo, ItemRepo, mongo
+from app import app, mongo
+from app.models import LinkRepo, ItemRepo
 
 class TestPlannerApiDataGet(unittest.TestCase):
 
     def setUp(self):
-        self.l_repo = LinkRepo(mongo)
-        self.i_repo = ItemRepo(mongo)
+        self.l_repo = LinkRepo(app, mongo)
+        self.i_repo = ItemRepo(app, mongo)
 
     def test_get_planner_no_data(self):
         new_link = self.l_repo.create_link()

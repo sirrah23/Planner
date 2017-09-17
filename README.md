@@ -18,15 +18,17 @@ You can group friends together as teams and distribute lists amongst the groups 
 
 ### Prerequisites
 
-Make sure you have [Docker](
-https://docs.docker.com/engine/installation/
-) and [Docker Compose](https://docs.docker.com/compose/install/)
-installed on your machine.
+Make sure you have the following installed on your machine:
+
+* [Docker](https://docs.docker.com/engine/installation/)
+* [Docker Compose](https://docs.docker.com/compose/install/)
+* [Bower](https://bower.io/)
 
 ### Steps to run
 
 1. Clone the repository
 2. `cd` into the directory
+3. Run `bower install`
 3. Run `docker-compose up`
 4. Go to your browser and navigate to `http://<your_server_ip>/`.
 

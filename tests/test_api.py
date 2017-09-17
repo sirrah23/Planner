@@ -3,7 +3,7 @@ from flask import json
 from bson import ObjectId
 from tests.utils import drop_collection
 from app import app, mongo
-from app.models import LinkRepo, ItemRepo
+from app.models.models import LinkRepo, ItemRepo
 
 class TestPlannerApiDataGet(unittest.TestCase):
 

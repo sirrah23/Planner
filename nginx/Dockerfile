@@ -6,5 +6,3 @@ RUN rm -v /etc/nginx/conf.d/default.conf
 
 # Copy a configuration file from the current directory
 ADD nginx.conf /etc/nginx/
-
-RUN /etc/init.d/nginx restart

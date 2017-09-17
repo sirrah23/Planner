@@ -8,7 +8,7 @@ services:
       - APP_CONFIG=app.config.DevelopmentConfig
     ports:
      - "5000:5000"
-    command: gunicorn -b 127.0.0.1:5000 --workers=5 wsgi:app
+    command: gunicorn -b 0.0.0.0:5000 --workers=5 wsgi:app
     volumes:
      - .:/app
     links:

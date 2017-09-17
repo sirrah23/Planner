@@ -2,6 +2,7 @@ version: '2'
 services:
   web:
     build: .
+    restart: always
     environment:
       - DATABASE_URL=planner
       - DATABASE_TEST_URL=planner_test
@@ -15,6 +16,13 @@ services:
       - db:mongo
     depends_on:
       - db
+  nginx:
+    build: ./nginx/
+    restart: always
+    ports:
+      - "80:80"
+    links:
+      - web:web
   db:
     image: mongo:3.4.6
     ports:

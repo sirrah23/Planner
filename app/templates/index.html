@@ -10,7 +10,9 @@
     </body>
     <script>
         function redirect(link){
-            window.location = "http://localhost:5000/" + link;
+            const protocol = window.location.protocol;
+            const host = window.location.host;
+            window.location = `${protocol}//${host}/${link}`
         }
         function generate_plan(){
             const headers = new Headers();
